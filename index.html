@@ -5,13 +5,11 @@
     <title>XR Motor Disabilities</title>
     <meta name="description" content="XR Motor Disabilities">
     <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
   </head>
   <body>
     <a-scene>
-      <a-assets>
-        <img id="groundTexture" src="https://cdn.aframe.io/a-painter/images/floor.jpg" crossorigin="anonymous">
-        <img id="skyTexture" src="https://cdn.aframe.io/a-painter/images/sky.jpg" crossorigin="anonymous">
-      </a-assets>
+      <a-entity environment="preset: forest; dressingAmount: 500"></a-entity>
 
       <!-- Primitives. -->
       <a-box position="-1 0.6 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
@@ -26,8 +24,8 @@
       <a-circle src="#groundTexture" rotation="-90 0 0" radius="32"></a-circle>
 
       <!--Tracked controls. -->
-      <a-entity hand-controls="hand: left"></a-entity>
-      <a-entity hand-controls="hand: right"></a-entity>
+      <a-entity hand-tracking-controls="hand: left"></a-entity>
+      <a-entity hand-tracking-controls="hand: right"></a-entity>
     </a-scene>
   </body>
 </html>
