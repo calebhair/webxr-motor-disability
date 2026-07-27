@@ -5,3 +5,11 @@ riderModule.iml
 /_ReSharper.Caches/
 *.cer
 *.pem
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
