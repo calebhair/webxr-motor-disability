@@ -5,8 +5,8 @@ import * as https from "node:https";
 
 
 const server = https.createServer({
-  cert: fs.readFileSync('../localhost+1.pem'),
-  key: fs.readFileSync('../localhost+1-key.pem'),
+  cert: fs.readFileSync('./localhost+1.pem'),
+  key: fs.readFileSync('./localhost+1-key.pem'),
 }, (req, res) => {
   res.writeHead(200);
   res.end('hello world\n');
