@@ -1,14 +1,11 @@
 ﻿import basicSsl from '@vitejs/plugin-basic-ssl'
+import fs from "node:fs";
 
 export default {
-    plugins: [
-        basicSsl({
-            /** name of certification */
-            name: 'vrtest',
-            /** optional, days before certificate expires */
-            ttlDays: 90,
-            /** custom certification directory */
-            certDir: './',
-        }),
-    ],
+    server: {
+        https: {
+            cert: fs.readFileSync('./localhost+1.pem'),
+            key: fs.readFileSync('./localhost+1-key.pem'),
+        }
+    }
 }
