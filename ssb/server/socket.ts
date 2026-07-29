@@ -20,7 +20,9 @@ export function setupSocketStreamedBrowser() {
     async function onSocketConnect(socket: Socket) {
         console.log('Connected');
         socket.on('disconnect', onSocketDisconnect);
-        await sb.streamUrl('https://calebhair.github.io', 'Pixel 5')
+
+        const { url, device } = socket.handshake.query
+        await sb.streamUrl(url, device)
     }
 
     async function onSocketDisconnect() {
