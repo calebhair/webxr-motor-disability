@@ -14,20 +14,17 @@ export function setupSocketStreamedBrowser() {
         cors: { origin: '*', },
     });
     io.on('connection', onSocketConnect);
-    
-    const sb = new StreamedBrowser(onBrowserFrame);
 
     async function onSocketConnect(socket: Socket) {
         console.log('Connected');
-        socket.on('disconnect', onSocketDisconnect);
+        socket.on('disconnect', async () => {
+            console.log('Disconnected');
+            await socket.data.streamedBrowser.stopStream();
+        });
 
-        const { url, device } = socket.handshake.query
-        await sb.streamUrl(url, device)
-    }
-
-    async function onSocketDisconnect() {
-        console.log('Disconnected');
-        await sb.stopStream();
+        const { targetUrl, device } = socket.handshake.query // TODO validate
+        const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame);
+        await sb.streamUrl(targetUrl, device);
     }
 
     function onBrowserFrame(data, sessionId) {
@@ -36,5 +33,5 @@ export function setupSocketStreamedBrowser() {
         io.emit('frame', buf);
     }
     
-    return { server, io, sb }
+    return { server, io }
 }

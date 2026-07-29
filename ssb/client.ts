@@ -1,10 +1,10 @@
 ﻿import {io} from "socket.io-client";
 
 document.addEventListener('DOMContentLoaded', () => {
-    const url = 'https://www.qub.ac.uk/';
+    const targetUrl = 'https://www.qub.ac.uk/';
     const device = 'Pixel 5';
     
-    const socket = io("https://143.117.93.180:3000", { query: `url=${url}&device=${device}` });
+    const socket = io("https://143.117.93.180:3000", { query: `targetUrl=${targetUrl}&device=${device}` });
     const canvas = <HTMLCanvasElement> document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
