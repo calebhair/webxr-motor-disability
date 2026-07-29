@@ -22,15 +22,20 @@ export function setupSocketStreamedBrowser() {
             await socket.data.streamedBrowser.stopStream();
         });
 
-        const { targetUrl, device } = socket.handshake.query // TODO validate
         const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame);
+        socket.on('click', (eventData) => {
+            console.log(eventData)
+            sb.click(eventData);
+        })
+
+        const { targetUrl, device } = socket.handshake.query // TODO validate
         await sb.streamUrl(targetUrl, device);
     }
 
     function onBrowserFrame(data, sessionId) {
         const buf = Buffer.from(data, 'base64');
         // socket.send(buffer, { binary: true });
-        io.emit('frame', buf);
+        io.volatile.emit('frame', buf);
     }
     
     return { server, io }

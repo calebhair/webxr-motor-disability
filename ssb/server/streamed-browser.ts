@@ -78,4 +78,8 @@ export class StreamedBrowser {
     if (!this.page.isClosed()) await this.page?.close()
     if (this.browser.isConnected()) await this.browser.close()
   }
+  
+  async click({ x, y }) {
+    await this.page.mouse.click(x, y);
+  }
 }
