@@ -22,9 +22,9 @@ export class StreamedBrowser {
   private state: BrowserStates = BrowserStates.UNSTARTED;
   private abortController: AbortController;
 
-  constructor(onScreencastFrame: Function, onStarted: Function) {
-    this.onScreencastFrame = onScreencastFrame || noop;
-    this.onStarted = onStarted || noop;
+  constructor(onScreencastFrame: Function, onStarted: Function = noop) {
+    this.onScreencastFrame = onScreencastFrame;
+    this.onStarted = onStarted;
     this.abortController = new AbortController();
   }
   
