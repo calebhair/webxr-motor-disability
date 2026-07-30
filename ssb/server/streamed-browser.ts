@@ -11,18 +11,20 @@ const BrowserStates = Object.freeze({
 });
 type BrowserStates = typeof BrowserStates[keyof typeof BrowserStates]
 
-let count = 0;
+
+const noop = () => {};
 
 export class StreamedBrowser {
   private browser: Browser;
   private page: Page;
-  private cdpSession: CDPSession;
   private onScreencastFrame: Function
+  private onStarted: Function;
   private state: BrowserStates = BrowserStates.UNSTARTED;
   private abortController: AbortController;
 
-  constructor(onScreencastFrame: Function) {
-    this.onScreencastFrame = onScreencastFrame;
+  constructor(onScreencastFrame: Function, onStarted: Function) {
+    this.onScreencastFrame = onScreencastFrame || noop;
+    this.onStarted = onStarted || noop;
     this.abortController = new AbortController();
   }
   
@@ -39,7 +41,7 @@ export class StreamedBrowser {
     const page = this.page = await this.browser.newPage({...devices[device]});
     
     // Setup CDP session for streaming frames
-    const cdpSession = this.cdpSession = await page.context().newCDPSession(page);
+    const cdpSession = await page.context().newCDPSession(page);
     try {
       await page.goto(url, { signal: this.abortController.signal });
     } catch (e) {
@@ -58,6 +60,7 @@ export class StreamedBrowser {
     });
 
     this.state = BrowserStates.STARTED;
+    this.onStarted(this.browser);
   }
   
   async stopStream() {
