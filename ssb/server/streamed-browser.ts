@@ -18,13 +18,13 @@ export class StreamedBrowser {
   private browser: Browser;
   private page: Page;
   private onScreencastFrame: Function
-  private onStarted: Function;
+  private onBrowserStarted: Function;
   private state: BrowserStates = BrowserStates.UNSTARTED;
   private abortController: AbortController;
 
-  constructor(onScreencastFrame: Function, onStarted: Function = noop) {
+  constructor(onScreencastFrame: Function, onBrowserStarted: Function = noop) {
     this.onScreencastFrame = onScreencastFrame;
-    this.onStarted = onStarted;
+    this.onBrowserStarted = onBrowserStarted;
     this.abortController = new AbortController();
   }
   
@@ -60,7 +60,7 @@ export class StreamedBrowser {
     });
 
     this.state = BrowserStates.STARTED;
-    this.onStarted(this.browser);
+    this.onBrowserStarted(this.browser);
   }
   
   async stopStream() {
