@@ -2,34 +2,31 @@
 
 export function onPageLoad() {
 
-
-document.addEventListener('DOMContentLoaded', () => {
+function replace() {
+    replaceDatepickerWithAirDP('input[type="date"]')
+    replaceDatepickerWithAirDP('input[type="datetime-local"]', { timepicker: true })
+    replaceDatepickerWithAirDP('input[type="month"]', { view: 'months', minView: 'months', dateFormat: 'yyyy-MM' })
+    replaceDatepickerWithAirDP('input[type="time"]', { timepicker: true, onlyTimepicker: true })
     replaceSelects();
-    replaceDatepickers();
-    // handle selects added later (e.g. in SPAs)
-    new MutationObserver(replaceSelects).observe(document.body, { childList: true, subtree: true });
+}
+document.addEventListener('DOMContentLoaded', () => {
+    replace()
+    // In case elements are added (e.g., SPA)
+    new MutationObserver(replace).observe(document.body, { childList: true, subtree: true });
 });
 
-function replaceSelects() {
-    document.querySelectorAll('select:not([data-replaced])').forEach((select: HTMLSelectElement) => {
-        // TODO ignore custom ones?
-        select.setAttribute('data-replaced', 'true');
-        select.addEventListener("click", showSelectOverlay);
-    });
-}
-
-function replaceDatepickers() {
-    document.querySelectorAll('input[type="date"]:not([data-replaced])').forEach((datepicker: HTMLInputElement) => {
+function replaceDatepickerWithAirDP(querySelector, airDPSettings = {}) {
+    document.querySelectorAll(`${querySelector}:not([data-replaced])`).forEach((datepicker: HTMLInputElement) => {
         // TODO ignore custom ones?
         datepicker.setAttribute('data-replaced', 'true');
         new AirDatepicker(datepicker, {
-            locale: datepickerEnglishLocale,
+            locale: defaultDatepickerEnglishLocale,
+            ...airDPSettings
         });
     });
 }
-
 // https://air-datepicker.com/docs#
-const datepickerEnglishLocale = {
+const defaultDatepickerEnglishLocale = {
     days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
@@ -38,10 +35,17 @@ const datepickerEnglishLocale = {
     today: 'Today',
     clear: 'Clear',
     dateFormat: 'yyyy-MM-dd',
-    timeFormat: 'hh:ii aa',
+    timeFormat: 'hh:mm',
     firstDay: 0
 };
 
+function replaceSelects() {
+    document.querySelectorAll('select:not([data-replaced])').forEach((select: HTMLSelectElement) => {
+        // TODO ignore custom ones?
+        select.setAttribute('data-replaced', 'true');
+        select.addEventListener("click", showSelectOverlay);
+    });
+}
 
 function showSelectOverlay(event) {
     const select: HTMLSelectElement = event.target
