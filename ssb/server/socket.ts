@@ -2,7 +2,7 @@
 import * as fs from "node:fs";
 import { Server, Socket } from 'socket.io';
 
-import { StreamedBrowser } from "./streamed-browser.ts";
+import StreamedBrowser from "./streamed-browser.ts";
 
 export function setupSocketStreamedBrowser() {
     const server = createServer({

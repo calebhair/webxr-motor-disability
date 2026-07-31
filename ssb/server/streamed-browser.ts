@@ -1,7 +1,10 @@
-import { type Browser, type CDPSession, type Page,
+import { type Browser, type Page,
   chromium, devices } from 'playwright';
 import { onPageLoad } from "./preload.ts";
+import {readFileSync} from "node:fs";
 
+const airDatepickerBundle = readFileSync('./node_modules/air-datepicker/air-datepicker.js', 'utf-8');
+const airDatepickerCSS = readFileSync('./node_modules/air-datepicker/air-datepicker.css', 'utf-8');
 const STOP_RETRY_TIMEOUT = 1000;
 
 const BrowserStates = Object.freeze({
@@ -15,7 +18,7 @@ type BrowserStates = typeof BrowserStates[keyof typeof BrowserStates]
 
 const noop = () => {};
 
-export class StreamedBrowser {
+class StreamedBrowser {
   private browser: Browser;
   private page: Page;
   private onScreencastFrame: Function
@@ -40,6 +43,16 @@ export class StreamedBrowser {
     }
 
     const page = this.page = await this.browser.newPage({...devices[device]});
+    await page.addInitScript({
+      content: `
+        ${airDatepickerBundle}
+        document.addEventListener("DOMContentLoaded", () => {        
+          const style = document.createElement('style');
+          style.textContent = ${JSON.stringify(airDatepickerCSS)};
+          document.head.appendChild(style);
+        });
+      `
+    });
     await page.addInitScript(onPageLoad);
     
     // Setup CDP session for streaming frames
@@ -88,3 +101,5 @@ export class StreamedBrowser {
     await this.page.mouse.click(x, y);
   }
 }
+
+export default StreamedBrowser

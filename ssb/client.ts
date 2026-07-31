@@ -1,7 +1,7 @@
 ﻿import {io} from "socket.io-client";
 
 document.addEventListener('DOMContentLoaded', () => {
-    const targetUrl = 'https://html-in-canvas.dev/';
+    const targetUrl = 'https://www.digitala11y.com/academy/html-input-typedate-date-picker-demo/';
     const device = 'Pixel 5';
     
     const socket = io("https://143.117.93.180:3000", { query: `targetUrl=${targetUrl}&device=${device}` });

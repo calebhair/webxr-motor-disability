@@ -1,7 +1,49 @@
-﻿export function onPageLoad() {
+﻿declare const AirDatepicker: any;
+
+export function onPageLoad() {
 
 
-function showSelectOptions(event) {
+document.addEventListener('DOMContentLoaded', () => {
+    replaceSelects();
+    replaceDatepickers();
+    // handle selects added later (e.g. in SPAs)
+    new MutationObserver(replaceSelects).observe(document.body, { childList: true, subtree: true });
+});
+
+function replaceSelects() {
+    document.querySelectorAll('select:not([data-replaced])').forEach((select: HTMLSelectElement) => {
+        // TODO ignore custom ones?
+        select.setAttribute('data-replaced', 'true');
+        select.addEventListener("click", showSelectOverlay);
+    });
+}
+
+function replaceDatepickers() {
+    document.querySelectorAll('input[type="date"]:not([data-replaced])').forEach((datepicker: HTMLInputElement) => {
+        // TODO ignore custom ones?
+        datepicker.setAttribute('data-replaced', 'true');
+        new AirDatepicker(datepicker, {
+            locale: datepickerEnglishLocale,
+        });
+    });
+}
+
+// https://air-datepicker.com/docs#
+const datepickerEnglishLocale = {
+    days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+    months: ['January','February','March','April','May','June', 'July','August','September','October','November','December'],
+    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    today: 'Today',
+    clear: 'Clear',
+    dateFormat: 'yyyy-MM-dd',
+    timeFormat: 'hh:ii aa',
+    firstDay: 0
+};
+
+
+function showSelectOverlay(event) {
     const select: HTMLSelectElement = event.target
     
     const selectOptionsDisplay = document.createElement('div')
@@ -9,11 +51,6 @@ function showSelectOptions(event) {
     selectOptionsDisplay.style.left = select.offsetLeft + 'px';
     selectOptionsDisplay.style.top = select.offsetTop + 'px';
     selectOptionsDisplay.style.zIndex = '1000';
-
-    // document.addEventListener('mousedown', () => {
-    //     console.log('close select')
-    //     document.body.removeChild(selectOptionsDisplay);
-    // }, { once: true });
 
     function closeOnOutsideClick(e: MouseEvent) {
         if (!selectOptionsDisplay.contains(e.target as Node)) close();
@@ -44,22 +81,6 @@ function showSelectOptions(event) {
     }
     document.body.appendChild(selectOptionsDisplay);
 }
-
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    // wait for the page's own selects to exist, then replace them
-    const replaceSelects = () => {
-        document.querySelectorAll('select:not([data-replaced])').forEach((select: HTMLSelectElement) => {
-            select.setAttribute('data-replaced', 'true');
-            // initialize your chosen library on this element, e.g.:
-            select.addEventListener("click", showSelectOptions);
-        });
-    };
-    replaceSelects();
-    // handle selects added dynamically after initial load
-    new MutationObserver(replaceSelects).observe(document.body, { childList: true, subtree: true });
-});
 
 
 }
