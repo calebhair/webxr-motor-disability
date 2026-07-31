@@ -1,5 +1,6 @@
 import { type Browser, type CDPSession, type Page,
   chromium, devices } from 'playwright';
+import { onPageLoad } from "./preload.ts";
 
 const STOP_RETRY_TIMEOUT = 1000;
 
@@ -39,6 +40,7 @@ export class StreamedBrowser {
     }
 
     const page = this.page = await this.browser.newPage({...devices[device]});
+    await page.addInitScript(onPageLoad);
     
     // Setup CDP session for streaming frames
     const cdpSession = await page.context().newCDPSession(page);
