@@ -3,6 +3,7 @@
     "@playwright/browser-chromium": "^1.62.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "aframe": "^1.8.0",
+    "node-window-manager": "^2.2.4",
     "playwright": "^1.62.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",

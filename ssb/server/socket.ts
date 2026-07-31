@@ -3,6 +3,8 @@ import * as fs from "node:fs";
 import { Server, Socket } from 'socket.io';
 
 import { StreamedBrowser } from "./streamed-browser.ts";
+import { type Browser} from "playwright";
+import {onBrowserStarted} from "./recording/window-tracking.ts";
 
 export function setupSocketStreamedBrowser() {
     const server = createServer({
@@ -22,7 +24,7 @@ export function setupSocketStreamedBrowser() {
             await socket.data.streamedBrowser.stopStream();
         });
 
-        const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame);
+        const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame, onBrowserStarted);
         socket.on('click', (eventData) => {
             console.log(eventData)
             sb.click(eventData);
