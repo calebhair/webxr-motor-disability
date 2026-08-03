@@ -21,6 +21,7 @@ function replaceDatepickerWithAirDP(querySelector, airDPSettings = {}) {
         datepicker.setAttribute('data-replaced', 'true');
         new AirDatepicker(datepicker, {
             locale: defaultDatepickerEnglishLocale,
+            isMobile: true,
             ...airDPSettings
         });
     });

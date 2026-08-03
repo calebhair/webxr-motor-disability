@@ -32,7 +32,12 @@ class StreamedBrowser {
     this.abortController = new AbortController();
   }
   
-  async streamUrl(url: string, device: string) {
+  async streamUrl({ targetUrl, width, height, isMobile}) {
+    // TODO validate params
+    width = parseInt(width);
+    height = parseInt(height);
+    isMobile = isMobile === 'true';
+    
     if (this.state !== BrowserStates.UNSTARTED) {
       console.warn(`Streamed browser requested to start when state is ${String(this.state)}`);
     }
@@ -42,7 +47,11 @@ class StreamedBrowser {
       this.browser = await chromium.launch({headless: false});
     }
 
-    const page = this.page = await this.browser.newPage({...devices[device]});
+    const page = this.page = await this.browser.newPage({ 
+      viewport: { width, height },
+      isMobile,
+      hasTouch: true,
+    });
     await page.addInitScript({
       content: `
         ${airDatepickerBundle}
@@ -58,7 +67,7 @@ class StreamedBrowser {
     // Setup CDP session for streaming frames
     const cdpSession = await page.context().newCDPSession(page);
     try {
-      await page.goto(url, { signal: this.abortController.signal });
+      await page.goto(targetUrl, { signal: this.abortController.signal });
     } catch (e) {
       if (e.name !== 'AbortError') throw e; // Ignore AbortError
     }

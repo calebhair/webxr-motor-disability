@@ -28,8 +28,7 @@ export function setupSocketStreamedBrowser() {
             sb.click(eventData);
         })
 
-        const { targetUrl, device } = socket.handshake.query // TODO validate
-        await sb.streamUrl(targetUrl, device);
+        await sb.streamUrl(socket.handshake.query);
     }
 
     function onBrowserFrame(data, sessionId) {
