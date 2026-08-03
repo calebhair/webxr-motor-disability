@@ -21,7 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelector('#phone').addEventListener('touchstart', (event) => {
         const { x, y } = event.detail.texturePos;
-        socket.emit('click', { x: x * canvas.width, y: y * canvas.height });
+        const canvasX = x * canvas.width;
+        const canvasY = y * canvas.height;
+        socket.emit('click', { x: canvasX, y: canvasY });
+
+        drawCircle(ctx, canvasX, canvasY);
     });
 
     socket.on('frame', (data) => {
@@ -31,3 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// For visualising touches
+function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
+}

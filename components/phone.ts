@@ -25,7 +25,7 @@ AFRAME.registerComponent('phone', {
 
 AFRAME.registerComponent('touchable-plane', {
     schema: {
-        threshold: { type: 'number', default: 0.02 }, // how close counts as "touching" (meters)
+        threshold: { type: 'number', default: 0.005 }, // how close counts as "touching" (meters)
     },
 
     init: function () {
