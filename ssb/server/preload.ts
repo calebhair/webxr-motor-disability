@@ -7,9 +7,9 @@ function replace() {
     replaceDatepickerWithAirDP('input[type="datetime-local"]', { timepicker: true })
     replaceDatepickerWithAirDP('input[type="month"]', { view: 'months', minView: 'months', dateFormat: 'yyyy-MM' })
     replaceDatepickerWithAirDP('input[type="time"]', { timepicker: true, onlyTimepicker: true })
-    replaceSelects();
 }
 document.addEventListener('DOMContentLoaded', () => {
+    addSelectStyle();
     replace()
     // In case elements are added (e.g., SPA)
     new MutationObserver(replace).observe(document.body, { childList: true, subtree: true });
@@ -39,52 +39,11 @@ const defaultDatepickerEnglishLocale = {
     firstDay: 0
 };
 
-function replaceSelects() {
-    document.querySelectorAll('select:not([data-replaced])').forEach((select: HTMLSelectElement) => {
-        // TODO ignore custom ones?
-        select.setAttribute('data-replaced', 'true');
-        select.addEventListener("click", showSelectOverlay);
-    });
+function addSelectStyle() {
+    const styleTag = document.createElement('style');
+    styleTag.id = 'base-select-appearance-style';
+    styleTag.textContent = `select, ::picker(select) { appearance: base-select; }`;
+    document.head.appendChild(styleTag);
 }
-
-function showSelectOverlay(event) {
-    const select: HTMLSelectElement = event.target
-    
-    const selectOptionsDisplay = document.createElement('div')
-    selectOptionsDisplay.style.position = 'fixed';
-    selectOptionsDisplay.style.left = select.offsetLeft + 'px';
-    selectOptionsDisplay.style.top = select.offsetTop + 'px';
-    selectOptionsDisplay.style.zIndex = '1000';
-
-    function closeOnOutsideClick(e: MouseEvent) {
-        if (!selectOptionsDisplay.contains(e.target as Node)) close();
-    }
-    function close() {
-        document.body.removeChild(selectOptionsDisplay);
-        document.removeEventListener('mousedown', closeOnOutsideClick);
-    }
-    // defer attaching the listener so the *current* mousedown (the one that
-    // opened the dropdown) doesn't immediately trigger it
-    setTimeout(() => {
-        document.addEventListener('mousedown', closeOnOutsideClick);
-    }, 0);
-
-    function makeOption(select: HTMLSelectElement, option: HTMLOptionElement) {
-        const optionDiv = document.createElement('div')
-        optionDiv.innerText = option.text
-        optionDiv.addEventListener('click', (e) => {
-            select.value = option.value
-            select.dispatchEvent(new Event('change'))
-            close();
-        })
-        return optionDiv;
-    }
-    
-    for (let i = 0; i < select.options.length; i++) {
-        selectOptionsDisplay.appendChild(makeOption(select, select.options.item(i)))
-    }
-    document.body.appendChild(selectOptionsDisplay);
-}
-
 
 }
