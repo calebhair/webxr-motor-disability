@@ -5,19 +5,23 @@
     <title>HERE</title>
     <meta name="description" content="XR Motor Disabilities">
     <script src="./ssb/client.ts" type="module"></script>
-    
-    <style>
-      body {
-        margin: 0;
-      }
-      
-      canvas {
-        border: red solid;
-      }
-    </style>
-    
+    <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+    <script src="./components/phone.ts" type="module"></script>
+
   </head>
   <body>
-    <canvas id="canvas" width="1000" height="1000"></canvas>
+    <canvas id="canvas" width="1000" height="1000" hidden="hidden"></canvas>
+
+    <a-scene>
+      <a-entity environment="preset: forest; dressingAmount: 500"></a-entity>
+
+      <a-box position="0 1 -0.5" scale="0.1 0.1 0.1" color="#4CC3D9" grabbable></a-box>
+
+      <a-entity id="leftHand" hand-tracking-grab-controls="hand: left;"></a-entity>
+      <a-entity id="rightHand" hand-tracking-grab-controls="hand: right;"></a-entity>
+      
+      <a-entity phone position="0 1.5 -0.5" grabbable></a-entity>
+    </a-scene>
   </body>
 </html>

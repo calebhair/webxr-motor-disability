@@ -1,5 +1,5 @@
 import { type Browser, type Page,
-  chromium, devices } from 'playwright';
+  chromium } from 'playwright';
 import { onPageLoad } from "./preload.ts";
 import {readFileSync} from "node:fs";
 
