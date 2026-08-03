@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                     y: canvas.offsetTop + event.y,});
     });
 
+    document.querySelector('#phone').addEventListener('touchstart', (event) => {
+        const { x, y } = event.detail.texturePos;
+        socket.emit('click', { x: x * canvas.width, y: y * canvas.height });
+    });
+
     socket.on('frame', (data) => {
         const blob = new Blob([data], { type: 'image/jpeg' });
         createImageBitmap(blob).then((bitmap) => {
