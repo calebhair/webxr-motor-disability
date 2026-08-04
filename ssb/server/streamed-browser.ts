@@ -55,6 +55,11 @@ class StreamedBrowser {
       isMobile,
       hasTouch: true,
     });
+    page.on('popup', async popup => {
+      await popup.waitForLoadState('domcontentloaded');
+      await page.goto(popup.url(), { signal: this.abortController.signal });
+      await popup.close();
+    });
     await page.addInitScript({
       content: `
         ${airDatepickerBundle}
@@ -115,7 +120,7 @@ class StreamedBrowser {
 
   async dispatchTouchEvent({ eventType, touchPoints }) {
     console.warn(eventType, touchPoints)
-    await this.cdpSession.send('Input.dispatchTouchEvent', {
+    await this.cdpSession?.send('Input.dispatchTouchEvent', {
       type: eventType,
       touchPoints,
     });
