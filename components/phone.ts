@@ -76,12 +76,12 @@ AFRAME.registerComponent('touchable-plane', {
 
         if (touchedThisFrame && !this.isTouching) {
             this.isTouching = true;
-            this.el.emit('touchstart', touchData);
+            this.el.emit('touchStart', touchData);
         } else if (touchedThisFrame && this.isTouching) {
-            this.el.emit('touchmove', touchData);
+            this.el.emit('touchMove', touchData);
         } else if (!touchedThisFrame && this.isTouching) {
             this.isTouching = false;
-            this.el.emit('touchend');
+            this.el.emit('touchEnd');
         }
     }
 });

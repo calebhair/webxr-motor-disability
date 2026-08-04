@@ -24,8 +24,10 @@ export function setupSocketStreamedBrowser() {
 
         const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame);
         socket.on('click', (eventData) => {
-            console.log(eventData)
             sb.click(eventData);
+        })
+        socket.on('dispatchTouchEvent', (eventData) => {
+            sb.dispatchTouchEvent(eventData);
         })
 
         await sb.streamUrl(socket.handshake.query);

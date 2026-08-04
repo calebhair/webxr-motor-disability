@@ -1,5 +1,7 @@
-import { type Browser, type Page,
-  chromium } from 'playwright';
+import {
+  type Browser, type Page, type CDPSession,
+  chromium
+} from 'playwright';
 import { onPageLoad } from "./preload.ts";
 import {readFileSync} from "node:fs";
 
@@ -25,6 +27,7 @@ class StreamedBrowser {
   private onBrowserStarted: Function;
   private state: BrowserStates = BrowserStates.UNSTARTED;
   private abortController: AbortController;
+  private cdpSession: CDPSession;
 
   constructor(onScreencastFrame: Function, onBrowserStarted: Function = noop) {
     this.onScreencastFrame = onScreencastFrame;
@@ -65,7 +68,7 @@ class StreamedBrowser {
     await page.addInitScript(onPageLoad);
     
     // Setup CDP session for streaming frames
-    const cdpSession = await page.context().newCDPSession(page);
+    const cdpSession = this.cdpSession = await page.context().newCDPSession(page);
     try {
       await page.goto(targetUrl, { signal: this.abortController.signal });
     } catch (e) {
@@ -108,6 +111,18 @@ class StreamedBrowser {
   
   async click({ x, y }) {
     await this.page.mouse.click(x, y);
+  }
+
+  async dispatchTouchEvent({ eventType, touchPoints }) {
+    console.warn(eventType, touchPoints)
+    await this.cdpSession.send('Input.dispatchTouchEvent', {
+      type: eventType,
+      touchPoints,
+    });
+    
+    // await this.page.evaluate(() => {
+    //   document.elementFromPoint(x, y).dispatchEvent(event);
+    // });
   }
 }
 
