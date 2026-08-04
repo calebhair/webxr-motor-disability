@@ -18,19 +18,20 @@ export function setupSocketStreamedBrowser() {
 
     async function onSocketConnect(socket: Socket) {
         console.log('Connected', socket.id);
+        socket.join(socket.id);
         socket.on('disconnect', async () => {
             console.log(`Disconnected ${socket.id}`);
             await socket.data.streamedBrowser.stopStream();
         });
         
-        await setupBrowserForSocket(socket, onBrowserFrame)
+        await setupBrowserForSocket(socket, (data, sessionId) => {
+            const buf = Buffer.from(data, 'base64');
+            // Use socket ID as room, otherwise will stream data to all connections;
+            // this way, each separate connection streams its browser to only that connection.
+            io.to(socket.id).volatile.emit('frame', buf);
+        });
     }
 
-    function onBrowserFrame(data, sessionId) {
-        const buf = Buffer.from(data, 'base64');
-        io.volatile.emit('frame', buf);
-    }
-    
     return { server, io }
 }
 
