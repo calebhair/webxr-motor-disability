@@ -43,7 +43,5 @@ async function setupBrowserForSocket(socket: Socket, onBrowserFrame: Function) {
         await sb.dispatchTouchEvent(eventData);
     })
 
-    // socket.on('click', sb.click)
-
     await sb.streamUrl(socket.handshake.query);
 }
