@@ -42,16 +42,15 @@ handControlsPrototype.tick = function() {
 const WRIST_INDEX = 0;
 const degreeInRad = Math.PI / 180;
 handControlsPrototype.applyTremor = function() {
-    this.translateHand(1, 0, 0);
     this.rotateHand(45 * degreeInRad, 45 * degreeInRad, 45 * degreeInRad);
 };
 
 handControlsPrototype.translateHand = function(x, y, z){
     this._changeMatrix.makeTranslation(x, y, z);
     for (let jointIndex = 0; jointIndex < 25; jointIndex++) {
-        this.loadJointMatrix(jointIndex)
+        this._loadJointMatrix(jointIndex)
         this._jointPose.premultiply(this._changeMatrix);
-        this.setJointMatrix(jointIndex)
+        this._setJointMatrix(jointIndex)
     }
 }
 
@@ -64,7 +63,7 @@ handControlsPrototype.rotateHand = function (x, y, z) {
     const wristPos = this._wristPos.setFromMatrixPosition(wristMatrix);
 
     for (let jointIndex = 0; jointIndex < 25; jointIndex++) {
-        this.loadJointMatrix(jointIndex)
+        this._loadJointMatrix(jointIndex)
 
         // Find this joint's position relative to the wrist
         this._relative.setFromMatrixPosition(this._jointPose).sub(wristPos);
@@ -74,16 +73,17 @@ handControlsPrototype.rotateHand = function (x, y, z) {
         this._jointPose.premultiply(rotation);
         // Move the relative position back to world position
         this._jointPose.setPosition(wristPos.x + this._relative.x, wristPos.y + this._relative.y, wristPos.z + this._relative.z);
-
-        this._jointPose.toArray(this.jointPoses, jointIndex * 16);
-        this.setJointMatrix(jointIndex)
+        
+        this._setJointMatrix(jointIndex)
     }
 };
 
-handControlsPrototype.loadJointMatrix = function (jointIndex) {
+// Reads the pose of the joint at the given index to the matrix _jointPose
+handControlsPrototype._loadJointMatrix = function (jointIndex) {
     this._jointPose.fromArray(this.jointPoses, jointIndex * 16);
 }
 
-handControlsPrototype.setJointMatrix = function (jointIndex) {
+// Writes the pose of the matrix _jointPose to the joint at the given index
+handControlsPrototype._setJointMatrix = function (jointIndex) {
     this._jointPose.toArray(this.jointPoses, jointIndex * 16);
 }
