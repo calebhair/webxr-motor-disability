@@ -1,9 +1,12 @@
 ﻿import {getChildrenIDsRecursively, HandJointIDs} from "./hand-helpers.ts";
-import {join} from "node:path";
 
 const THREE = AFRAME.THREE;
-
+const { MathUtils } = THREE;
 const handControlsPrototype = AFRAME.components['hand-tracking-controls'].Component.prototype;
+const degreeInRad = Math.PI / 180;
+
+const amplitudeDegrees = 1;
+const tremorHz = 10
 
 const superInit = handControlsPrototype.init
 handControlsPrototype.init = function(){
@@ -25,7 +28,7 @@ handControlsPrototype.init = function(){
 }
 
 // Duplicate of original implementation, with applyTremor inserted (yikes)
-handControlsPrototype.tick = function() {
+handControlsPrototype.tick = function(time, timeDelta) {
     var sceneEl = this.el.sceneEl;
     var controller = this.el.components['tracked-controls'] && this.el.components['tracked-controls'].controller;
     var frame = sceneEl.frame;
@@ -39,7 +42,7 @@ handControlsPrototype.tick = function() {
 
         this.hasPoses = frame.fillPoses(controller.hand.values(), referenceSpace, this.jointPoses) &&
             frame.fillJointRadii(controller.hand.values(), this.jointRadii);
-        this.applyTremor();
+        this.applyTremor(time);
 
         this.updateHandModel();
         this.detectGesture();
@@ -47,9 +50,13 @@ handControlsPrototype.tick = function() {
     }
 };
 
-const degreeInRad = Math.PI / 180;
-handControlsPrototype.applyTremor = function() {
-    this.rotateJoint(HandJointIDs.INDEX_PHALANX_PROXIMAL, 45 * degreeInRad, 0, 0);
+handControlsPrototype.applyTremor = function(time) {
+    const changeVec = Array.from({ length: 3 }, () => {
+        // time is in ms, divide by 1000 to get seconds, multiply by 2PI to get a full cycle per second.
+        const rhythm = Math.sin(time / 500 * Math.PI * tremorHz);
+        return rhythm * amplitudeDegrees * degreeInRad * MathUtils.randFloat(0.8, 1.1);
+    })
+    this.rotateJoint(HandJointIDs.WRIST, ...changeVec);
 };
 
 handControlsPrototype.translateHand = function(x, y, z){
@@ -65,15 +72,14 @@ handControlsPrototype.rotateJoint = function (targetJointID: HandJointIDs, x, y,
     const pivotMatrix = this._pivotMatrix.fromArray(this.jointPoses, targetJointID * 16);
     const pivotPos = this._pivotPos.setFromMatrixPosition(pivotMatrix);
 
-    // The rotation you want, expressed in the pivot's own local frame
-    // (e.g. "bend around the knuckle's hinge axis", not "bend around world X")
+    // Rotation expressed in the pivot's own local frame
     this._pivotQuat.setFromRotationMatrix(pivotMatrix);
     this._localQuat.setFromEuler(new THREE.Euler(x, y, z));
 
-    // Convert to the equivalent world-space rotation: rotate into pivot space,
-    // apply the local rotation, rotate back out. This is what lets the same
-    // (x, y, z) mean "bend the knuckle" regardless of which way the hand is facing.
-    this._worldQuat.copy(this._pivotQuat).multiply(this._localQuat).multiply(this._pivotQuat.clone().invert());
+    // Convert to world-space rotation: rotate into pivot space, apply the local rotation, rotate back out
+    this._worldQuat.copy(this._pivotQuat)
+        .multiply(this._localQuat)
+        .multiply(this._pivotQuat.clone().invert());
     const rotation = this._changeMatrix.makeRotationFromQuaternion(this._worldQuat);
 
     const children = getChildrenIDsRecursively(targetJointID);

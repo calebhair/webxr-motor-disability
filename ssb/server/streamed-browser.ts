@@ -76,10 +76,8 @@ class StreamedBrowser {
     });
   
     // If a page is opened in a new tab, go to it
-    page.on('popup', async popup => {
-      await popup.waitForLoadState('domcontentloaded');
-      await page.goto(popup.url(), { signal: this.abortController.signal });
-      await popup.close();
+    page.on('popup', popup => {
+      console.warn('Page opened in new tab; not yet supported.')
     });
   
     // Preload air datepicker via 
@@ -153,10 +151,15 @@ class StreamedBrowser {
    * @param touchPoints the touch points to pass, in the form of a list: [ {x, y, id}, {...} ]
    */
   async dispatchTouchEvent({ eventType, touchPoints }) {
-    await this.cdpSession?.send('Input.dispatchTouchEvent', {
-      type: eventType,
-      touchPoints,
-    });
+    try {
+      await this.cdpSession?.send('Input.dispatchTouchEvent', {
+        type: eventType,
+        touchPoints,
+      });
+    }
+    catch (e) {
+      console.warn(e)
+    }
   }
 }
 
