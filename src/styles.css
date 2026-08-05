@@ -1,5 +1,5 @@
 #streamed-browser-canvas {
-    /*visibility: hidden;*/
+    visibility: hidden;
     z-index: 99999; /* For ease of debugging; this can be unhidden to see what is being streamed directly. */
     position: fixed;
 }

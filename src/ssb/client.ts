@@ -1,21 +1,21 @@
 ﻿import {io, type Socket} from "socket.io-client";
 
-const browserParams = {
-    targetUrl: 'https://testpages.eviltester.com/pages/forms/special-formats/',
-    width: "500",
-    height: "500",
-    scale: 0.5,
-    isMobile: "true",
-    streamedBrowserServerUrl: "https://localhost:3000"
-};
+export function setupSocket(params) {
+    const browserParams = {
+        targetUrl: params.targetUrl,
+        width: params.canvasResolution.width,
+        height: params.canvasResolution.height,
+        isMobile: params.isMobile
+    }
+    const socket = io(params.streamedBrowserServerUrl, { query: new URLSearchParams(browserParams).toString() });
 
-export function setupSocket() {
-    const socket = io(browserParams.streamedBrowserServerUrl, { query: new URLSearchParams(browserParams).toString() });
     const canvas = <HTMLCanvasElement> document.getElementById('streamed-browser-canvas');
-    canvas.width = parseInt(browserParams.width);
-    canvas.height = parseInt(browserParams.height);
+    canvas.style.width = params.canvasSize.width;
+    canvas.style.height = params.canvasSize.height;
+    canvas.width = parseInt(params.canvasResolution.width);
+    canvas.height = parseInt(params.canvasResolution.height);
     const ctx = canvas.getContext('2d');
-    ctx.scale(browserParams.scale, browserParams.scale);
+    ctx.scale(params.canvasScale, params.canvasScale);
 
     canvas.addEventListener('click', (event) => {
         socket.emit('click', { x: canvas.offsetLeft + event.x,

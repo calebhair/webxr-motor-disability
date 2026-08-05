@@ -2,12 +2,22 @@
 
 const THREE = AFRAME.THREE;
 
+const streamedBrowserParams = {
+    streamedBrowserServerUrl: "https://localhost:3000",
+    targetUrl: 'https://testpages.eviltester.com/pages/forms/special-formats/',
+    canvasSize: { width: "10000px", height: "10000px" },
+    canvasResolution: { width: "500", height: "500" },
+    physicalSize: { width: 0.1, height: 0.1 },
+    canvasScale: 0.5,
+    isMobile: "true",
+};
+
 AFRAME.registerComponent('screen', {
     init: function () {
         console.log('Adding screen');
         const { data, el } = this;
 
-        setupSocket()
+        setupSocket(streamedBrowserParams)
         
         // TODO dynamic dimensions
         const width = 0.1;

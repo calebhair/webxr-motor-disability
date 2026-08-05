@@ -42,12 +42,8 @@ class StreamedBrowser {
 
   /**
    * Starts the browser (if not started, opens the URL, and starts streaming via Chrome CDP.
-   * @param targetUrl the URL to load
-   * @param width the browser width in pixels, as a string or number
-   * @param height the browser height in pixels
-   * @param isMobile 'Whether the meta viewport tag is taken into account and touch events are enabled' - https://playwright.dev/docs/emulation#ismobile
    */
-  async streamUrl({ targetUrl, width, height, isMobile}) {
+  async streamUrl({ targetUrl, width, height, isMobile }) {
     if (this.state !== BrowserStates.UNSTARTED) {
       console.warn(`Streamed browser requested to start when state is ${String(this.state)}`);
     }
