@@ -1,8 +1,18 @@
 ﻿declare const AirDatepicker: any;
 
-// onPageLoad is loaded as a browser script. Avoid importing from other files or referring to functions outside onPageLoad
+// onPageLoad is run as a browser script.
+// Avoid importing from other files, or referring to functions outside onPageLoad.
 export function onPageLoad() {
 
+document.addEventListener('DOMContentLoaded', () => {
+    addSelectStyle();
+    insertCustomOverlays();
+    setupTouchKeyboard();
+
+    // In case elements are added (e.g., SPA)
+    new MutationObserver(insertCustomOverlays)
+        .observe(document.body, { childList: true, subtree: true });
+});
 
 function insertCustomOverlays() {
     addAirDatePicker('input[type="date"]') // Date
@@ -10,15 +20,6 @@ function insertCustomOverlays() {
     addAirDatePicker('input[type="month"]', { view: 'months', minView: 'months', dateFormat: 'yyyy-MM' }) // Month
     addAirDatePicker('input[type="time"]', { timepicker: true, onlyTimepicker: true }) // Time
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    addSelectStyle();
-    insertCustomOverlays();
-
-    // In case elements are added (e.g., SPA)
-    new MutationObserver(insertCustomOverlays)
-        .observe(document.body, { childList: true, subtree: true });
-});
 
 /**
  * Adds a style tag that causes selects to show in HTML instead of using browser overlay
@@ -59,5 +60,9 @@ const defaultDatepickerEnglishLocale = {
     timeFormat: 'hh:mm',
     firstDay: 0
 };
+
+function setupTouchKeyboard() {
+    const keyboard = new Keyboard();
+}
 
 }

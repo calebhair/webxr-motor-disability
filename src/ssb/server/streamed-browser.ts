@@ -8,6 +8,8 @@ import {readFileSync} from "node:fs";
 // Load air datepicker manually, due to restrictions on addInitScript
 const airDatepickerBundle = readFileSync('./node_modules/air-datepicker/air-datepicker.js', 'utf-8');
 const airDatepickerCSS = readFileSync('./node_modules/air-datepicker/air-datepicker.css', 'utf-8');
+const simpleKeyboardBundle = readFileSync('./node_modules/simple-keyboard/build/index.js', 'utf-8');
+const simpleKeyboardCSS = readFileSync('./node_modules/simple-keyboard/build/css/index.css', 'utf-8');
 
 const BrowserStates = Object.freeze({
   UNSTARTED: Symbol("unstarted"),
@@ -83,6 +85,16 @@ class StreamedBrowser {
         document.addEventListener("DOMContentLoaded", () => {        
           const style = document.createElement('style');
           style.textContent = ${JSON.stringify(airDatepickerCSS)};
+          document.head.appendChild(style);
+        });
+      `
+    });
+    await page.addInitScript({
+      content: `
+        ${simpleKeyboardBundle}
+        document.addEventListener("DOMContentLoaded", () => {        
+          const style = document.createElement('style');
+          style.textContent = ${JSON.stringify(simpleKeyboardCSS)};
           document.head.appendChild(style);
         });
       `
