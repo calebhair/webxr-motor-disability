@@ -31,6 +31,8 @@ export function setupSocket(params) {
             ctx.drawImage(bitmap, 0, 0);
         });
     });
+
+    return { socket, canvas };
 }
 
 function setupTouchHandlers(socket: Socket, canvas : HTMLCanvasElement) {

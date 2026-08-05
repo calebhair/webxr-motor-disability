@@ -17,14 +17,12 @@ AFRAME.registerComponent('screen', {
         console.log('Adding screen');
         const { data, el } = this;
 
-        setupSocket(streamedBrowserParams)
+        const { socket, canvas } = setupSocket(streamedBrowserParams);
         
         // TODO dynamic dimensions
-        const width = 0.1;
-        const height = 0.1;
+        const { width, height } = streamedBrowserParams.physicalSize;
         const deviceDepth = 0.01;
 
-        const canvas = document.getElementById("streamed-browser-canvas")
         el.object3D.position.set(0, 0, deviceDepth/2 + 0.001) // For z-fighting
         this.geometry = new THREE.PlaneGeometry(width, height);
         this.texture = new THREE.CanvasTexture(canvas);
@@ -49,6 +47,8 @@ AFRAME.registerComponent('screen', {
 
 AFRAME.registerComponent('touchable-plane', {
     schema: {
+        width: { type: 'number', default: 0.1 },
+        height: { type: 'number', default: 0.1 },
         threshold: { type: 'number', default: 0.005 }, // how close counts as "touching" (meters)
     },
 
@@ -59,8 +59,8 @@ AFRAME.registerComponent('touchable-plane', {
         this.planeMatrixInverse = new THREE.Matrix4();
 
         // TODO update based on geometry
-        this.width = 0.1;
-        this.height = 0.1;
+        this.width = this.data.width;
+        this.height = this.data.height;
         this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
     },
 
