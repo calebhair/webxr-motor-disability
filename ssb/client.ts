@@ -34,7 +34,7 @@ function setupSocket() {
 
 function setupTouchHandlers(socket: Socket, canvas : HTMLCanvasElement) {
     const ctx = canvas.getContext('2d');
-    const phoneElement = document.querySelector('#phone');
+    const screenElement = document.querySelector('#screen');
     
     function handleTouchEvent(event) {
         const { x, y } = event.detail.texturePos;
@@ -45,19 +45,19 @@ function setupTouchHandlers(socket: Socket, canvas : HTMLCanvasElement) {
         return touchPoints;
     }
 
-    phoneElement.addEventListener('touchStart', (event) => {
+    screenElement.addEventListener('touchStart', (event) => {
         const touchPoints = handleTouchEvent(event);
         for (const touchPoint of touchPoints) {
             drawCircle(ctx, touchPoint.x, touchPoint.y, 'red');
         }
     });
-    phoneElement.addEventListener('touchMove', (event) => {
+    screenElement.addEventListener('touchMove', (event) => {
         const touchPoints = handleTouchEvent(event);
         for (const touchPoint of touchPoints) {
             drawCircle(ctx, touchPoint.x, touchPoint.y, 'yellow');
         }
     });
-    phoneElement.addEventListener('touchEnd', (event) => {
+    screenElement.addEventListener('touchEnd', (event) => {
         socket.emit('dispatchTouchEvent', { eventType: event.type, touchPoints: [] });
     });
 }

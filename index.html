@@ -16,12 +16,14 @@
     <a-scene>
       <a-entity environment="preset: forest; dressingAmount: 500"></a-entity>
 
-      <a-box position="0 1 -0.5" scale="0.1 0.1 0.1" color="#4CC3D9" grabbable></a-box>
+      <a-box position="0 0.7 -0.5" scale="0.1 0.1 0.1" color="#4CC3D9" grabbable></a-box>
 
       <a-entity id="leftHand" hand-tracking-grab-controls="hand: left;"></a-entity>
       <a-entity id="rightHand" hand-tracking-grab-controls="hand: right;"></a-entity>
       
-      <a-entity id="phone" phone position="0 1.5 -0.5" grabbable touchable-plane></a-entity>
+      <a-entity id="browser-device" position="0 1.0 -0.5" grabbable>
+        <a-entity id="screen" screen touchable-plane></a-entity>
+      </a-entity>
     </a-scene>
   </body>
 </html>

@@ -1,17 +1,27 @@
 ﻿const THREE = AFRAME.THREE;
 
-AFRAME.registerComponent('phone', {
+AFRAME.registerComponent('screen', {
     init: function () {
-        console.log('Adding phone');
+        console.log('Adding screen');
         const { data, el } = this;
+        
+        // TODO dynamic dimensions
+        const width = 0.1;
+        const height = 0.1;
+        const deviceDepth = 0.01;
 
         const canvas = document.getElementById("canvas")
-        console.warn(canvas)
-        this.geometry = new THREE.PlaneGeometry(0.1, 0.1);
+        el.object3D.position.set(0, 0, deviceDepth/2 + 0.001) // For z-fighting
+        this.geometry = new THREE.PlaneGeometry(width, height);
         this.texture = new THREE.CanvasTexture(canvas);
         this.material = new THREE.MeshBasicMaterial({ map: this.texture });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         el.setObject3D('mesh', this.mesh);
+
+        const geometry = new THREE.BoxGeometry(width, height, deviceDepth);
+        const material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+        const deviceMesh = new THREE.Mesh(geometry, material);
+        document.getElementById('browser-device').setObject3D('mesh', deviceMesh);
     },
 
     tick: function (time, timeDelta) {
@@ -41,6 +51,10 @@ AFRAME.registerComponent('touchable-plane', {
     },
 
     tick: function () {
+        this.handleTouch();
+    },
+    
+    handleTouch: function () {
         let touchedThisFrame = false;
         let touchData = null;
 
