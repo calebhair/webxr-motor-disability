@@ -1,16 +1,20 @@
-﻿const THREE = AFRAME.THREE;
+﻿import {setupSocket} from "../ssb/client.ts";
+
+const THREE = AFRAME.THREE;
 
 AFRAME.registerComponent('screen', {
     init: function () {
         console.log('Adding screen');
         const { data, el } = this;
+
+        setupSocket()
         
         // TODO dynamic dimensions
         const width = 0.1;
         const height = 0.1;
         const deviceDepth = 0.01;
 
-        const canvas = document.getElementById("canvas")
+        const canvas = document.getElementById("streamed-browser-canvas")
         el.object3D.position.set(0, 0, deviceDepth/2 + 0.001) // For z-fighting
         this.geometry = new THREE.PlaneGeometry(width, height);
         this.texture = new THREE.CanvasTexture(canvas);
