@@ -6,10 +6,11 @@ const browserParams = {
     height: "500",
     scale: 0.5,
     isMobile: "true",
+    streamedBrowserServerUrl: "https://localhost:3000"
 };
 
 export function setupSocket() {
-    const socket = io("https://localhost:3000", { query: new URLSearchParams(browserParams).toString() });
+    const socket = io(browserParams.streamedBrowserServerUrl, { query: new URLSearchParams(browserParams).toString() });
     const canvas = <HTMLCanvasElement> document.getElementById('streamed-browser-canvas');
     canvas.width = parseInt(browserParams.width);
     canvas.height = parseInt(browserParams.height);
