@@ -1,4 +1,5 @@
-﻿import {Fingers, HandJoint} from "./hand-helpers.ts";
+﻿import {getChildrenIDsRecursively, HandJointIDs} from "./hand-helpers.ts";
+import {join} from "node:path";
 
 const THREE = AFRAME.THREE;
 
@@ -48,7 +49,7 @@ handControlsPrototype.tick = function() {
 
 const degreeInRad = Math.PI / 180;
 handControlsPrototype.applyTremor = function() {
-    this.rotateJointsAroundJoint(HandJoint.INDEX_PHALANX_PROXIMAL, Fingers.INDEX, 45 * degreeInRad, 0, 0);
+    this.rotateJoint(HandJointIDs.INDEX_PHALANX_PROXIMAL, 45 * degreeInRad, 0, 0);
 };
 
 handControlsPrototype.translateHand = function(x, y, z){
@@ -60,8 +61,8 @@ handControlsPrototype.translateHand = function(x, y, z){
     }
 }
 
-handControlsPrototype.rotateJointsAroundJoint = function (pivotJointIndex, jointIndexesToRotate, x, y, z) {
-    const pivotMatrix = this._pivotMatrix.fromArray(this.jointPoses, pivotJointIndex * 16);
+handControlsPrototype.rotateJoint = function (targetJointID: HandJointIDs, x, y, z) {
+    const pivotMatrix = this._pivotMatrix.fromArray(this.jointPoses, targetJointID * 16);
     const pivotPos = this._pivotPos.setFromMatrixPosition(pivotMatrix);
 
     // The rotation you want, expressed in the pivot's own local frame
@@ -75,8 +76,9 @@ handControlsPrototype.rotateJointsAroundJoint = function (pivotJointIndex, joint
     this._worldQuat.copy(this._pivotQuat).multiply(this._localQuat).multiply(this._pivotQuat.clone().invert());
     const rotation = this._changeMatrix.makeRotationFromQuaternion(this._worldQuat);
 
-    for (const jointIndex of jointIndexesToRotate) {
-        this._loadJointMatrix(jointIndex)
+    const children = getChildrenIDsRecursively(targetJointID);
+    for (const jointID of children.concat(targetJointID)) {
+        this._loadJointMatrix(jointID)
 
         // Find this joint's position relative to the pivot
         this._relativePosition.setFromMatrixPosition(this._jointPose).sub(pivotPos);
@@ -87,7 +89,7 @@ handControlsPrototype.rotateJointsAroundJoint = function (pivotJointIndex, joint
         // Move the relative position back to world position
         this._jointPose.setPosition(pivotPos.x + this._relativePosition.x, pivotPos.y + this._relativePosition.y, pivotPos.z + this._relativePosition.z);
         
-        this._setJointMatrix(jointIndex)
+        this._setJointMatrix(jointID)
     }
 };
 
