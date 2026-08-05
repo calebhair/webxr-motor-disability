@@ -42,26 +42,16 @@ handControlsPrototype.tick = function() {
 const WRIST_INDEX = 0;
 const degreeInRad = Math.PI / 180;
 handControlsPrototype.applyTremor = function() {
-    // this.translateHand(0.1, 0, 0);
-    // this.rotateBone(7, 90 * degreeInRad, 0, 0)
+    this.translateHand(1, 0, 0);
     this.rotateHand(45 * degreeInRad, 45 * degreeInRad, 45 * degreeInRad);
 };
 
-handControlsPrototype.applyMatrix = function(boneIndex) {
-    this._jointPose.fromArray(this.jointPoses, boneIndex * 16);
-    this._jointPose.multiply(this._changeMatrix); // POST-multiply
-    this._jointPose.toArray(this.jointPoses, boneIndex * 16);
-};
-
-handControlsPrototype.rotateBone = function(boneIndex, x, y, z) {
-    this._changeMatrix.makeRotationFromEuler(new THREE.Euler(x, y, z));
-    this.applyMatrix(boneIndex);
-};
-
-handControlsPrototype.translateHand = function(x, y, z){ // TODO test because removed identity
+handControlsPrototype.translateHand = function(x, y, z){
     this._changeMatrix.makeTranslation(x, y, z);
-    for (let boneIndex = 0; boneIndex < 25; boneIndex++) {
-        this.applyMatrix(boneIndex);
+    for (let jointIndex = 0; jointIndex < 25; jointIndex++) {
+        this.loadJointMatrix(jointIndex)
+        this._jointPose.premultiply(this._changeMatrix);
+        this.setJointMatrix(jointIndex)
     }
 }
 
