@@ -1,6 +1,6 @@
 ﻿import {io, type Socket} from "socket.io-client";
 
-export function setupSocket(params) {
+export function setupSocket(params, canvas: HTMLCanvasElement) {
     const browserParams = {
         targetUrl: params.targetUrl,
         width: params.canvasResolution.width,
@@ -9,13 +9,7 @@ export function setupSocket(params) {
     }
     const socket = io(params.streamedBrowserServerUrl, { query: new URLSearchParams(browserParams).toString() });
 
-    const canvas = <HTMLCanvasElement> document.getElementById('streamed-browser-canvas');
-    canvas.style.width = params.canvasSize.width;
-    canvas.style.height = params.canvasSize.height;
-    canvas.width = parseInt(params.canvasResolution.width);
-    canvas.height = parseInt(params.canvasResolution.height);
     const ctx = canvas.getContext('2d');
-    ctx.scale(params.canvasScale, params.canvasScale);
 
     canvas.addEventListener('click', (event) => {
         socket.emit('click', { x: canvas.offsetLeft + event.x,

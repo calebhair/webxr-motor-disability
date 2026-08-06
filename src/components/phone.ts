@@ -3,7 +3,7 @@
 const THREE = AFRAME.THREE;
 
 const streamedBrowserParams = {
-    streamedBrowserServerUrl: "https://localhost:3000",
+    streamedBrowserServerUrl: "https://143.117.93.180:3000",
     targetUrl: 'https://testpages.eviltester.com/pages/forms/text-inputs/',
     canvasSize: { width: "10000px", height: "10000px" },
     canvasResolution: { width: "500", height: "500" },
@@ -17,7 +17,15 @@ AFRAME.registerComponent('screen', {
         console.log('Adding screen');
         const { data, el } = this;
 
-        const { socket, canvas } = setupSocket(streamedBrowserParams);
+        const canvas = <HTMLCanvasElement> document.getElementById('streamed-browser-canvas');
+        canvas.style.width = streamedBrowserParams.canvasSize.width;
+        canvas.style.height = streamedBrowserParams.canvasSize.height;
+        canvas.width = parseInt(streamedBrowserParams.canvasResolution.width);
+        canvas.height = parseInt(streamedBrowserParams.canvasResolution.height);
+        const ctx = canvas.getContext('2d');
+        ctx.scale(streamedBrowserParams.canvasScale, streamedBrowserParams.canvasScale);
+
+        setupSocket(streamedBrowserParams, canvas);
         
         // TODO dynamic dimensions
         const { width, height } = streamedBrowserParams.physicalSize;
