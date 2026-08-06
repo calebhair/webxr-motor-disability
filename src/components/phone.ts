@@ -2,13 +2,15 @@
 
 const THREE = AFRAME.THREE;
 
+const mm = (millimetres: number) => millimetres / 1000;
+
 const streamedBrowserParams = {
     streamedBrowserServerUrl: "https://143.117.93.180:3000",
     targetUrl: 'https://testpages.eviltester.com/pages/forms/text-inputs/',
     canvasSize: { width: "100vmax", height: "100vmax" },
-    canvasResolution: { width: "500", height: "500" },
-    physicalSize: { width: 0.1, height: 0.1 },
-    canvasScale: 0.5,
+    canvasResolution: { width: '430', height: '932' },
+    physicalSize: { width: mm(77.6), height: mm(160.7) },
+    canvasScale: 1, // Inversely proportional to the resolution at the same scale. Making this 2 will reduce the pixels but retain the same size.
     isMobile: "true",
 };
 
@@ -34,6 +36,7 @@ AFRAME.registerComponent('screen', {
         el.object3D.position.set(0, 0, deviceDepth/2 + 0.001) // For z-fighting
         this.geometry = new THREE.PlaneGeometry(width, height);
         this.texture = new THREE.CanvasTexture(canvas);
+        this.texture.colorSpace = THREE.SRGBColorSpace
         this.material = new THREE.MeshBasicMaterial({ map: this.texture });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         el.setObject3D('mesh', this.mesh);

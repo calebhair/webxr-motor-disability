@@ -1,6 +1,6 @@
 import {
   type Browser, type Page, type CDPSession,
-  chromium
+  chromium, devices
 } from 'playwright';
 import { onPageLoad } from "./preload.ts";
 import {readFileSync} from "node:fs";
