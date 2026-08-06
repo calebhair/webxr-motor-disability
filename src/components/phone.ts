@@ -5,7 +5,7 @@ const THREE = AFRAME.THREE;
 const streamedBrowserParams = {
     streamedBrowserServerUrl: "https://143.117.93.180:3000",
     targetUrl: 'https://testpages.eviltester.com/pages/forms/text-inputs/',
-    canvasSize: { width: "10000px", height: "10000px" },
+    canvasSize: { width: "100vmax", height: "100vmax" },
     canvasResolution: { width: "500", height: "500" },
     physicalSize: { width: 0.1, height: 0.1 },
     canvasScale: 0.5,
@@ -55,8 +55,8 @@ AFRAME.registerComponent('screen', {
 
 AFRAME.registerComponent('touchable-plane', {
     schema: {
-        width: { type: 'number', default: 0.1 },
-        height: { type: 'number', default: 0.1 },
+        width: { type: 'number' },
+        height: { type: 'number' },
         threshold: { type: 'number', default: 0.005 }, // how close counts as "touching" (meters)
     },
 
@@ -65,10 +65,9 @@ AFRAME.registerComponent('touchable-plane', {
         this.fingerWorldPos = new THREE.Vector3();
         this.localPos = new THREE.Vector3();
         this.planeMatrixInverse = new THREE.Matrix4();
-
-        // TODO update based on geometry
-        this.width = this.data.width;
-        this.height = this.data.height;
+        // TODO figure out neater way to configure touchable-plane
+        this.data.width = streamedBrowserParams.physicalSize.width;
+        this.data.height = streamedBrowserParams.physicalSize.height;
         this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
     },
 
@@ -77,6 +76,8 @@ AFRAME.registerComponent('touchable-plane', {
     },
     
     handleTouch: function () {
+        const { width, height, threshold } = this.data;
+        if (!width || !height) return;
         let touchedThisFrame = false;
         let touchData = null;
 
@@ -92,17 +93,18 @@ AFRAME.registerComponent('touchable-plane', {
             this.planeMatrixInverse.copy(this.el.object3D.matrixWorld).invert();
             this.localPos.copy(this.fingerWorldPos).applyMatrix4(this.planeMatrixInverse);
 
-            const withinX = Math.abs(this.localPos.x) <= this.width / 2;
-            const withinY = Math.abs(this.localPos.y) <= this.height / 2;
-            const withinZ = Math.abs(this.localPos.z) <= this.data.threshold;
+            const withinX = Math.abs(this.localPos.x) <= width / 2;
+            const withinY = Math.abs(this.localPos.y) <= height / 2;
+            const withinZ = Math.abs(this.localPos.z) <= threshold;
 
             if (withinX && withinY && withinZ) {
                 touchedThisFrame = true;
                 touchData = {
                     point: this.localPos.clone(),
                     texturePos: {
-                        x: (this.localPos.x + this.width / 2) / this.width,
-                        y: 1 - (this.localPos.y + this.height / 2) / this.height
+                        // Normalise to be from top left
+                        x: (this.localPos.x + width / 2) / width,
+                        y: 1 - (this.localPos.y + height / 2) / height
                     },
                     hand,
                 };

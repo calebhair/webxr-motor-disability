@@ -5,7 +5,8 @@ export function setupSocket(params, canvas: HTMLCanvasElement) {
         targetUrl: params.targetUrl,
         width: params.canvasResolution.width,
         height: params.canvasResolution.height,
-        isMobile: params.isMobile
+        isMobile: params.isMobile,
+        browserScale: 1 / params.canvasScale,
     }
     const socket = io(params.streamedBrowserServerUrl, { query: new URLSearchParams(browserParams).toString() });
 
@@ -16,7 +17,7 @@ export function setupSocket(params, canvas: HTMLCanvasElement) {
             y: canvas.offsetTop + event.y,});
     });
 
-    setupTouchHandlers(socket, canvas);
+    setupTouchHandlers(socket, canvas, browserParams.browserScale);
 
     // Draw frames from simulated browser
     socket.on('frame', (data) => {
@@ -29,14 +30,14 @@ export function setupSocket(params, canvas: HTMLCanvasElement) {
     return { socket, canvas };
 }
 
-function setupTouchHandlers(socket: Socket, canvas : HTMLCanvasElement) {
+function setupTouchHandlers(socket: Socket, canvas : HTMLCanvasElement, scale: number) {
     const ctx = canvas.getContext('2d');
     const screenElement = document.querySelector('#screen');
     
     function handleTouchEvent(event) {
         const { x, y } = event.detail.texturePos;
-        const canvasX = x * canvas.width;
-        const canvasY = y * canvas.height;
+        const canvasX = x * canvas.width * scale;
+        const canvasY = y * canvas.height * scale;
         const touchPoints = [{ x: canvasX, y: canvasY, id: 0 }];
         socket.emit('dispatchTouchEvent', { eventType: event.type, touchPoints });
         return touchPoints;

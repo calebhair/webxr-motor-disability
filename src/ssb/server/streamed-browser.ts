@@ -45,7 +45,7 @@ class StreamedBrowser {
   /**
    * Starts the browser (if not started, opens the URL, and starts streaming via Chrome CDP.
    */
-  async streamUrl({ targetUrl, width, height, isMobile }) {
+  async streamUrl({ targetUrl, width, height, isMobile, browserScale }) {
     if (this.state !== BrowserStates.UNSTARTED) {
       console.warn(`Streamed browser requested to start when state is ${String(this.state)}`);
     }
@@ -54,28 +54,39 @@ class StreamedBrowser {
     width = parseInt(width);
     height = parseInt(height);
     isMobile = isMobile === 'true';
+    browserScale = parseFloat(browserScale);
 
     if (!this.browser) {
-      this.browser = await chromium.launch({headless: false});
+      this.browser = await chromium.launch({
+        headless: true, // Must be headless for auto-scaling
+        args: [
+          `--force-device-scale-factor=${browserScale}`,
+          '--high-dpi-support=1',
+          '--use-gl=angle',
+          '--use-angle=gl', // or 'd3d11' on Windows for native D3D backend TODO
+          '--enable-gpu-rasterization',
+          '--ignore-gpu-blocklist',
+        ],
+      });
     }
 
-    await this.setupPage(targetUrl, width, height, isMobile);
+    await this.setupPage(targetUrl, width, height, isMobile, browserScale);
     await this.setupCDP();
 
     this.state = BrowserStates.STARTED;
     this.onBrowserStarted(this.browser);
   }
 
-  private async setupPage(targetUrl: string, width: number, height: number, isMobile: boolean) {
+  private async setupPage(targetUrl: string, width: number, height: number, isMobile: boolean, browserScale) {
     const page = this.page = await this.browser.newPage({
       viewport: { width, height },
       isMobile,
       hasTouch: true,
+      deviceScaleFactor: browserScale,
     });
-  
-    // If a page is opened in a new tab, go to it
-    page.on('popup', popup => {
-      console.warn('Page opened in new tab; not yet supported.')
+
+    page.on('console', (msg) =>{
+      console.log(`Browser console (${msg.type()}): ${msg.text()}`)
     });
   
     // Preload air datepicker via 
@@ -104,7 +115,7 @@ class StreamedBrowser {
     try {
       await page.goto(targetUrl, { signal: this.abortController.signal });
     } catch (e) {
-      if (e.name !== 'AbortError') throw e; // Ignore AbortError
+      if (e.name !== 'AbortError') throw e; // Ignore AbortError, as it's a feature to allow quickly shutting down the browser
     }
     
     return page;

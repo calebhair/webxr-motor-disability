@@ -27,7 +27,7 @@ handControlsPrototype.init = function(){
     this._worldQuat = new THREE.Quaternion();
 }
 
-// Duplicate of original implementation, with applyTremor inserted (yikes)
+// Duplicate of original implementation, with applyTremor inserted (yikes) TODO improve
 handControlsPrototype.tick = function(time, timeDelta) {
     var sceneEl = this.el.sceneEl;
     var controller = this.el.components['tracked-controls'] && this.el.components['tracked-controls'].controller;
