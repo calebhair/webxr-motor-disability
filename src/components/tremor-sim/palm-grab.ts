@@ -5,7 +5,7 @@ const THREE = AFRAME.THREE;
 const PALM_GRAB_START_DISTANCE = 0.10;
 const PALM_GRAB_END_DISTANCE = 0.12;
 
-AFRAME.registerComponent('palm-grab', {
+export const PalmGrabFunctions = {
     init: function () {
         this.handTrackingControls = this.el.components['hand-tracking-controls'];
         this.jointPoses = this.handTrackingControls.jointPoses;
@@ -58,7 +58,7 @@ AFRAME.registerComponent('palm-grab', {
     onPalmGrabStarted : function () {
         AFRAME.log('palmgrabstarted')
         const { grabControls } = this;
-        if (!grabControls.collidedEl) { return; }
+        if (!grabControls.collidedEl && !grabControls.grabbedEl) { return; }
         grabControls.grabbedEl = grabControls.collidedEl;
         grabControls.transferEntityOwnership();
         grabControls.grab();
@@ -69,4 +69,4 @@ AFRAME.registerComponent('palm-grab', {
         this.grabControls.releaseGrabbedEntity();
     },
 
-});
+}

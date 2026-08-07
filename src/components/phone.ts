@@ -68,28 +68,38 @@ AFRAME.registerComponent('touchable-plane', {
         this.fingerWorldPos = new THREE.Vector3();
         this.localPos = new THREE.Vector3();
         this.planeMatrixInverse = new THREE.Matrix4();
+
         // TODO figure out neater way to configure touchable-plane
         this.data.width = streamedBrowserParams.physicalSize.width;
         this.data.height = streamedBrowserParams.physicalSize.height;
+
         this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
+        this.handTrackingComponents = []
+        for (const hand of this.hands) {
+            this.handTrackingComponents.push({
+                hand,
+                handTrackingControls: hand.components['hand-tracking-controls'],
+                grabControls: hand.components['hand-tracking-grab-controls'],
+            });
+        }
     },
+    after: ['hand-tracking-grab-controls'],
 
     tick: function () {
         this.handleTouch();
     },
-    
+
     handleTouch: function () {
         const { width, height, threshold } = this.data;
         if (!width || !height) return;
         let touchedThisFrame = false;
         let touchData = null;
 
-        for (const hand of this.hands) {
-            const trackedControls = hand.components['hand-tracking-controls'];
-            if (!trackedControls || !trackedControls.bones) continue;
+        for (const { hand, handTrackingControls, grabControls } of this.handTrackingComponents) {
+            if (!handTrackingControls || !handTrackingControls.bones || grabControls.grabbedEl) continue;
 
             // Get index fingertip bone (varies slightly by A-Frame version)
-            const tipBone = trackedControls.indexTipBone || hand.object3D.getObjectByName('index-finger-tip');
+            const tipBone = handTrackingControls.indexTipBone || hand.object3D.getObjectByName('index-finger-tip');
             if (!tipBone) continue;
 
             tipBone.getWorldPosition(this.fingerWorldPos);
