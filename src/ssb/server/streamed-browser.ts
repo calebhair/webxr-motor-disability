@@ -88,6 +88,9 @@ class StreamedBrowser {
     page.on('console', (msg) =>{
       console.log(`Browser console (${msg.type()}): ${msg.text()}`)
     });
+    page.on('pageerror', (err) => {
+      console.log(`Browser error: ${err}`)
+    });
   
     // Preload air datepicker via 
     await page.addInitScript({

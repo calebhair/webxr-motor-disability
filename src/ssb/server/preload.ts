@@ -1,4 +1,5 @@
 ﻿declare const AirDatepicker: any;
+declare const SimpleKeyboard: any;
 
 // onPageLoad is run as a browser script.
 // Avoid importing from other files, or referring to functions outside onPageLoad.
@@ -7,7 +8,7 @@ export function onPageLoad() {
 document.addEventListener('DOMContentLoaded', () => {
     addSelectStyle();
     insertCustomOverlays();
-    setupTouchKeyboard();
+    setupKeyboard();
 
     // In case elements are added (e.g., SPA)
     new MutationObserver(insertCustomOverlays)
@@ -61,8 +62,19 @@ const defaultDatepickerEnglishLocale = {
     firstDay: 0
 };
 
-function setupTouchKeyboard() {
-    const keyboard = new Keyboard();
+function setupKeyboard() {
+    const kbContainer = document.createElement('div');
+    kbContainer.classList.add('simple-keyboard');
+    document.body.appendChild(kbContainer);
+
+    function onChange(input) {
+        const activeElement = document.activeElement;
+        activeElement.value = input;
+        setTimeout(() => {
+            activeElement.focus();
+        }, 10);
+    }
+    new SimpleKeyboard.default({ onChange });
 }
 
 }
