@@ -1,4 +1,4 @@
-﻿import {Fingers} from "./hand-helpers.ts";
+﻿import {Fingers, HandJointIDs} from "./hand-helpers.ts";
 
 const THREE = AFRAME.THREE;
 
@@ -19,10 +19,10 @@ export const PalmGrabFunctions = {
     after: ['hand-tracking-grab-controls'],
 
     tick: function () {
-        this.detectPalmGrab();
+        this._detectPalmGrab();
     },
 
-    detectPalmGrab : function () {
+    _detectPalmGrab : function () {
         if (!this.handTrackingControls.hasPoses) return;
 
         const fingertips = [Fingers.INDEX, Fingers.MIDDLE, Fingers.RING];
@@ -59,9 +59,41 @@ export const PalmGrabFunctions = {
         AFRAME.log('palmgrabstarted')
         const { grabControls } = this;
         if (!grabControls.collidedEl && !grabControls.grabbedEl) { return; }
+        this._alignCollidedElWithHand();
         grabControls.grabbedEl = grabControls.collidedEl;
         grabControls.transferEntityOwnership();
         grabControls.grab();
+    },
+
+    _alignCollidedElWithHand() {
+        // todo cache instances
+        const jointPose = new THREE.Matrix4();
+        const wristWorldPos = new THREE.Vector3();
+        const wristWorldRot = new THREE.Quaternion();
+        const offsetPos = new THREE.Vector3(0, 0, -0.05);
+        const offsetRot = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 0), Math.PI/2);
+
+        jointPose.fromArray(this.jointPoses, HandJointIDs.WRIST * 16)
+        wristWorldPos.setFromMatrixPosition(jointPose);
+        wristWorldRot.setFromRotationMatrix(jointPose);
+        
+        const worldPos = wristWorldPos.clone().add(
+            offsetPos.clone().applyQuaternion(wristWorldRot)
+        );
+
+        const worldRot = wristWorldRot.clone().multiply(offsetRot);
+
+        const { collidedEl } = this.grabControls;
+        collidedEl.setAttribute('position', {
+            x: worldPos.x,
+            y: worldPos.y,
+            z: worldPos.z
+        });
+        collidedEl.setAttribute('rotation', {
+            x: worldRot.x,
+            y: worldRot.y,
+            z: worldRot.z
+        });
     },
 
     onPalmGrabEnded : function () {

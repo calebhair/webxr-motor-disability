@@ -30,10 +30,11 @@ const grabControlsInit = grabControlsPrototype.init
 grabControlsPrototype.init = function(){
     grabControlsInit.call(this);
 
-    this.detectPalmGrab = PalmGrabFunctions.detectPalmGrab.bind(this)
+    this._detectPalmGrab = PalmGrabFunctions._detectPalmGrab.bind(this)
     this._getTipDistanceFromMetacarpal = PalmGrabFunctions._getTipDistanceFromMetacarpal.bind(this)
     this.onPalmGrabStarted = PalmGrabFunctions.onPalmGrabStarted.bind(this)
     this.onPalmGrabEnded = PalmGrabFunctions.onPalmGrabEnded.bind(this)
+    this._alignCollidedElWithHand = PalmGrabFunctions._alignCollidedElWithHand.bind(this)
     PalmGrabFunctions.init.call(this);
 }
 
