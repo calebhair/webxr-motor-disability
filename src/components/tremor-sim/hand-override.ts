@@ -4,21 +4,19 @@ const THREE = AFRAME.THREE;
 const handControlsPrototype = AFRAME.components['hand-tracking-controls'].Component.prototype;
 
 const superInit = handControlsPrototype.init
-const superTick = handControlsPrototype.tick
 handControlsPrototype.init = function(){
     superInit.call(this);
     this.tremor = new Tremor(this.jointPoses)
 }
 
-// Duplicate of original implementation, with applyTremor inserted (yikes) TODO improve
+const superTick = handControlsPrototype.tick
 handControlsPrototype.tick = function(time, timeDelta) {
     superTick.call(this, time, timeDelta);
-    
+    if (!this.hasPoses) return;
+
     // Tremor tick
-    if (this.hasPoses) {
-        this.tremor.applyTremor(time);
-        this.updateHandModel();
-        this.detectGesture();
-        this.updateWristObject();
-    }
+    this.tremor.applyTremor(time);
+    this.updateHandModel();
+    this.detectGesture();
+    this.updateWristObject();
 }
