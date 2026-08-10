@@ -12,9 +12,13 @@ function mod(n, m) {
     return ((n % m) + m) % m;
 }
 
+const axes = ['x', 'y', 'z'];
+
 AFRAME.registerComponent('calibrate-grip', {
     readings: [],
     mostRecentIndex: -1,
+    readingAverage: new THREE.Vector3(),
+    readingRange: Infinity,
     stablePoints: [],
     
     play: function () {
@@ -30,8 +34,14 @@ AFRAME.registerComponent('calibrate-grip', {
                 grabControls: hand.components['hand-tracking-grab-controls'],
             });
         }
+
+        this.jointPoses = this.handTrackingComponents[0].handTrackingControls.jointPoses;
         
         this.nextReadingTime = 0;
+        
+        // Cached instances
+        this.indexTipPose = new THREE.Matrix4()
+        this.newPosition = new THREE.Vector3()
     },
 
     tick: function (time, timeDelta) {
@@ -40,39 +50,36 @@ AFRAME.registerComponent('calibrate-grip', {
             this.nextReadingTime = time + READING_DELAY_MS;
         }
 
-        if (this.canMarkStablePoint()) {
-            const avgPos = this.getAveragePosition()
-            this.stablePoints.push(avgPos);
-            const stablePointMarker = this.createMarker(avgPos, '#00ff00')
+        // If sufficient readings and range is close enough
+        if (this.readings.length >= MINIMUM_STABLE_DISTANCE && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
+            this.stablePoints.push(this.readingAverage.clone());
+            const stablePointMarker = this.createMarker(this.readingAverage, '#00ff00')
             this.el.appendChild(stablePointMarker);
         }
     },
     
     recordReading: function () {
-        const jointPoses = this.handTrackingComponents[0].handTrackingControls.jointPoses;
-        const jointPose = new THREE.Matrix4()
-        const newPosition = new THREE.Vector3()
-
-        newPosition.setFromMatrixPosition(jointPose.fromArray(jointPoses, HandJointIDs.INDEX_TIP * 16));
+        const { newPosition } = this;
+        newPosition.setFromMatrixPosition(this.indexTipPose.fromArray(this.jointPoses, HandJointIDs.INDEX_TIP * 16));
 
         if (this.readings.length >= MAX_READINGS) {
-            const prevIndex = this.mostRecentIndex;
-            this.mostRecentIndex = mod(this.mostRecentIndex + 1, MAX_READINGS);
-            const prevObject3D = this.readings[prevIndex].element.object3D
-            const mostRecentElement = this.readings[this.mostRecentIndex].element
+            const lastUpdatedIndex = mod(this.mostRecentIndex + 1, MAX_READINGS);
+            const lastUpdatedElement = this.readings[lastUpdatedIndex];
+            lastUpdatedElement.object3D.position.set(newPosition.x, newPosition.y, newPosition.z);
+            this.mostRecentIndex = lastUpdatedIndex;
 
-            const distance = prevObject3D.position.distanceTo(mostRecentElement.object3D.position);
+            // Update color depending on distance from average
+            const distance = this.calculateAverageReading().distanceTo(lastUpdatedElement.object3D.position);
             const color = this.getDistanceAsColor(distance);
+            lastUpdatedElement.setAttribute('color', `#${color.getHexString()}`);
 
-            this.readings[this.mostRecentIndex].distanceFromLastPoint = distance;
-            this.readings[this.mostRecentIndex].position = newPosition;
-            mostRecentElement.setAttribute('color', `#${color.getHexString()}`);
-            mostRecentElement.object3D.position.set(newPosition.x, newPosition.y, newPosition.z);
+            // Other updates
+            this.calculateReadingsRange();
             return;
         }
         
         const newMarker = this.createMarker(newPosition, '#ff0000');
-        this.readings.push({ element: newMarker, position: newPosition, distanceFromLastPoint: Infinity });
+        this.readings.push(newMarker);
         this.mostRecentIndex++;
         this.el.appendChild(newMarker);
     },
@@ -89,20 +96,31 @@ AFRAME.registerComponent('calibrate-grip', {
         const alpha = Math.min(distance / MINIMUM_STABLE_DISTANCE, 1);
         return new THREE.Color().lerpColors(STABLE_COLOR, UNSTABLE_COLOR, alpha)
     },
-    
-    canMarkStablePoint() {
-        let totalDistance = 0;
-        this.readings.forEach(reading => totalDistance += reading.distanceFromLastPoint);
-        const averageDistance = totalDistance / this.readings.length;
-        return this.readings.length >= MAX_READINGS && averageDistance < MINIMUM_STABLE_DISTANCE * LENIENCE;
+
+    calculateReadingsRange() {
+        const lowerVector = new THREE.Vector3(Infinity, Infinity, Infinity);
+        const upperVector = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+
+        this.readings.forEach(reading => {
+            const position = reading.getAttribute('position');
+            for (const axis of axes) {
+                if (position[axis] > upperVector[axis]) upperVector[axis] = position[axis];
+                if (position[axis] < lowerVector[axis]) lowerVector[axis] = position[axis];
+            }
+        });
+
+        this.readingRange = lowerVector.distanceTo(upperVector);
+        return this.readingRange;
     },
 
-    getAveragePosition() {
-        if (this.readings.length === 0) return new THREE.Vector3(0, 0, 0);
-        const avgPosition = new THREE.Vector3();
-        this.readings.forEach(reading => {
-            avgPosition.add(reading.position)
+    calculateAverageReading() {
+        const { readingAverage, readings } = this;
+        if (readings.length === 0) return readingAverage;
+        
+        readingAverage.set(0, 0, 0);
+        readings.forEach(reading => {
+            readingAverage.add(reading.getAttribute('position'));
         });
-        return avgPosition.divideScalar(this.readings.length);
+        return readingAverage.divideScalar(readings.length);
     },
 });
