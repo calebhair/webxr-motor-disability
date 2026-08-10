@@ -89,11 +89,7 @@ export const PalmGrabFunctions = {
             y: worldPos.y,
             z: worldPos.z
         });
-        collidedEl.setAttribute('rotation', {
-            x: worldRot.x,
-            y: worldRot.y,
-            z: worldRot.z
-        });
+        collidedEl.object3D.quaternion.copy(worldRot);
     },
 
     onPalmGrabEnded : function () {

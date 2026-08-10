@@ -23,6 +23,7 @@ handControlsPrototype.tick = function(time, timeDelta) {
     this.updateWristObject();
 }
 
+
 // Grab controls override
 const grabControlsPrototype = AFRAME.components['hand-tracking-grab-controls'].Component.prototype;
 
