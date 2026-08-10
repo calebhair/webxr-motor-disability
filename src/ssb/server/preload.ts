@@ -168,6 +168,7 @@ function setupKeyboard() {
 }
 
 function setupInputsForKeyboard(keyboard) {
+    // TODO restrict to certain inputs
     document.querySelectorAll("input:not([data-replaced])").forEach((inputElement: HTMLInputElement) => {
         inputElement.setAttribute('data-replaced', 'true');
         setupIndividualInput(inputElement, keyboard);
