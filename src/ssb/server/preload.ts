@@ -62,7 +62,7 @@ const defaultDatepickerEnglishLocale = {
     today: 'Today',
     clear: 'Clear',
     dateFormat: 'yyyy-MM-dd',
-    timeFormat: 'hh:mm',
+    timeFormat: 'HH:mm',
     firstDay: 0
 };
 
