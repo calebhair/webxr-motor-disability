@@ -1,0 +1,44 @@
+﻿// For interacting with uikit interfaces via hands
+import AFRAME from 'aframe';
+import {CombinedPointer, createTouchPointer} from '@pmndrs/pointer-events'
+import {HandJointIDs} from "./tremor-sim/hand-helpers.ts";
+
+const options = { hoverRadius: 0.1, downRadius: 0.03 }
+
+AFRAME.registerComponent('hand-touch-pointers', {
+    init: function () {
+        const { sceneEl } = this.el
+        const getCamera = () => sceneEl.camera
+
+        // space refs — createTouchPointer reads .current's world transform every move() call,
+        // so once we assign the fingertip bone Object3D here, position tracking is automatic
+        this.leftSpace = { current: null }
+        this.rightSpace = { current: null }
+        this.leftPointer = createTouchPointer(getCamera, this.leftSpace, {}, options, 'touch')
+        this.rightPointer = createTouchPointer(getCamera, this.rightSpace, {}, options, 'touch')
+
+        // Use combined pointer for performance
+        this.combined = new CombinedPointer(true) // true = allow both hands active simultaneously
+        this.combined.register(this.leftPointer)
+        this.combined.register(this.rightPointer)
+
+        const leftHandEl = document.querySelector('#leftHand')
+        const rightHandEl = document.querySelector('#rightHand')
+        if (!leftHandEl || !rightHandEl) throw 'Could not find hands.'
+        this.leftHandTracking = leftHandEl.components['hand-tracking-controls']
+        this.rightHandTracking = rightHandEl.components['hand-tracking-controls']
+    },
+
+    tick: function () {
+        // resolve fingertip bones lazily, once hand-tracking-controls has loaded them
+        if (!this.leftSpace.current) this.leftSpace.current = this._getFingertip(this.leftHandTracking)
+        if (!this.rightSpace.current) this.rightSpace.current = this._getFingertip(this.rightHandTracking)
+
+        this.combined.move(this.el.sceneEl.object3D, { timeStamp: performance.now() })
+    },
+
+    _getFingertip: function (handTrackingControls) {
+        if (!handTrackingControls?.bones) return;
+        return handTrackingControls?.bones[HandJointIDs.INDEX_TIP];
+    }
+})

@@ -18,11 +18,12 @@
     <script src="src/components/tremor-sim/overrides.ts" type="module"></script>
     <script src="src/components/calibrate-grip.ts" type="module"></script>
     <script src="src/components/ui.ts" type="module"></script>
+    <script src="src/components/hand-touch-pointers.ts" type="module"></script>
   </head>
   <body>
     <canvas id="streamed-browser-canvas"></canvas>
 
-    <a-scene>
+    <a-scene hand-touch-pointers>
       <a-entity environment="preset: contact; dressingAmount: 10"></a-entity>
       <a-log position="0 1 -0.5" scale="0.1 0.1 0.1" grabbable></a-log>
 

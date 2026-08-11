@@ -1,5 +1,6 @@
 ﻿import AFRAME from 'aframe';
-import { reversePainterSortStable, Container } from '@pmndrs/uikit'
+import { Container } from '@pmndrs/uikit'
+
 const THREE = AFRAME.THREE;
 
 AFRAME.registerComponent('ui-root', {
@@ -27,6 +28,10 @@ AFRAME.registerComponent('ui-root', {
             backgroundColor: "blue",
         })
         root.add(container2)
+
+        container1.addEventListener('pointerdown', () => {
+            AFRAME.log('tapped!')
+        })
     },
 
     tick: function (time, timeDelta) {
