@@ -1,5 +1,4 @@
-﻿import basicSsl from '@vitejs/plugin-basic-ssl'
-import fs from "node:fs";
+﻿import fs from "node:fs";
 
 export default {
     server: {
@@ -7,5 +6,8 @@ export default {
             cert: fs.readFileSync('./localhost+1.pem'),
             key: fs.readFileSync('./localhost+1-key.pem'),
         }
-    }
+    },
+    resolve: {
+        dedupe: ['three']
+    },
 }

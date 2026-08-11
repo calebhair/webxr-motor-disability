@@ -1,4 +1,5 @@
-﻿import {Fingers, HandJointIDs} from "./hand-helpers.ts";
+﻿import AFRAME from 'aframe';
+import {Fingers, HandJointIDs} from "./hand-helpers.ts";
 
 const THREE = AFRAME.THREE;
 

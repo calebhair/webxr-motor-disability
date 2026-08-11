@@ -1,8 +1,11 @@
 {
   "dependencies": {
     "@playwright/browser-chromium": "^1.62.0",
+    "@pmndrs/uikit": "^1.0.75",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "aframe": "^1.8.0",
+    "aframe-environment-component": "^1.5.0",
+    "aframe-log-component": "^1.0.7",
     "air-datepicker": "^3.6.0",
     "playwright": "^1.62.0",
     "simple-keyboard": "^3.8.175",

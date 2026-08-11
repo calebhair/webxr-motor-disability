@@ -1,3 +1,4 @@
+import AFRAME from 'aframe';
 import {getChildrenIDsRecursively, HandJointIDs} from "./hand-helpers.ts";
 
 const THREE = AFRAME.THREE;

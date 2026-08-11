@@ -1,4 +1,5 @@
-﻿import {HandJointIDs} from "./tremor-sim/hand-helpers.ts";
+﻿import AFRAME from 'aframe';
+import {HandJointIDs} from "./tremor-sim/hand-helpers.ts";
 
 const THREE = AFRAME.THREE;
 const MAX_READINGS = 10;
@@ -20,6 +21,7 @@ AFRAME.registerComponent('calibrate-grip', {
     readingAverage: new THREE.Vector3(),
     readingRange: Infinity,
     stablePoints: [],
+    recording: false,
     
     play: function () {
         if (this.initialised) return;
@@ -45,6 +47,7 @@ AFRAME.registerComponent('calibrate-grip', {
     },
 
     tick: function (time, timeDelta) {
+        if (!this.recording) return;
         if (time > this.nextReadingTime) {
             this.recordReading();
             this.nextReadingTime = time + READING_DELAY_MS;
@@ -55,6 +58,7 @@ AFRAME.registerComponent('calibrate-grip', {
             this.stablePoints.push(this.readingAverage.clone());
             const stablePointMarker = this.createMarker(this.readingAverage, '#00ff00')
             this.el.appendChild(stablePointMarker);
+            this.recording = false;
         }
     },
     

@@ -6,31 +6,36 @@
     <meta name="description" content="XR Motor Disabilities">
 
     <link rel="stylesheet" href="src/styles.css">
-    <script src="src/ssb/client.ts" type="module"></script>
-    <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-log-component/dist/aframe-log-component.min.js"></script>
-    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/handy-work/build/handy-controls.min.js"></script>
+    
+    <script type="module">
+      import 'aframe';
+      import 'aframe-log-component';
+      import 'aframe-environment-component';
+    </script>
 
+    <script src="src/ssb/client.ts" type="module"></script>
     <script src="src/components/phone.ts" type="module"></script>
     <script src="src/components/tremor-sim/overrides.ts" type="module"></script>
     <script src="src/components/calibrate-grip.ts" type="module"></script>
+    <script src="src/components/ui.ts" type="module"></script>
   </head>
   <body>
     <canvas id="streamed-browser-canvas"></canvas>
 
     <a-scene>
       <a-entity environment="preset: contact; dressingAmount: 10"></a-entity>
-
       <a-log position="0 1 -0.5" scale="0.1 0.1 0.1" grabbable></a-log>
 
-      <a-entity id="calibrate-grip" calibrate-grip></a-entity>
       <a-entity id="leftHand" hand-tracking-grab-controls="hand: left;" palm-grab></a-entity>
       <a-entity id="rightHand" hand-tracking-grab-controls="hand: right;" palm-grab></a-entity>
+
+      <a-entity id="calibrate-grip" calibrate-grip></a-entity>
       
       <a-entity id="browser-device" position="0 1.5 -0.5" grabbable>
         <a-entity id="screen" screen touchable-plane></a-entity>
       </a-entity>
+      
+      <a-entity ui-root position="0.5 1 -0.5" scale="0.1 0.1 0.1"></a-entity>
     </a-scene>
 
   </body>

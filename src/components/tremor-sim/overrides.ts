@@ -1,4 +1,5 @@
-﻿import {Tremor} from "./tremor.ts";
+﻿import AFRAME from 'aframe';
+import {Tremor} from "./tremor.ts";
 import {PalmGrabFunctions} from "./palm-grab.ts";
 
 
@@ -40,11 +41,10 @@ grabControlsPrototype.init = function(){
 }
 
 grabControlsPrototype.tick = function(time, timeDelta) {
-    PalmGrabFunctions.tick.call(this);
+    // PalmGrabFunctions.tick.call(this);
 }
 
 const superOnPinchStarted = grabControlsPrototype.onPinchStarted;
 grabControlsPrototype.onPinchStarted = function(evt) {
-    if (!this.grabControls.grabbedEl) return;
-    // superOnPinchStarted.call(this, evt);
+    superOnPinchStarted.call(this, evt);
 }
