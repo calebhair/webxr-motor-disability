@@ -6,7 +6,7 @@ const THREE = AFRAME.THREE;
 const mm = (millimetres: number) => millimetres / 1000;
 
 const streamedBrowserParams = {
-    streamedBrowserServerUrl: "https://143.117.93.180:3000",
+    streamedBrowserServerUrl: 'https://143.117.93.180:3000',
     targetUrl: 'https://testpages.eviltester.com/pages/forms/text-inputs/',
     canvasSize: { width: '100vmax', height: '100vmax' },
     canvasResolution: { width: '430', height: '932' },
