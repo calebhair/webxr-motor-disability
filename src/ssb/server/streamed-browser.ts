@@ -58,7 +58,7 @@ class StreamedBrowser {
 
         if (!this.browser) {
             this.browser = await chromium.launch({
-                headless: false, // Must be headless for auto-scaling
+                headless: true, // Must be headless for auto-scaling
                 args: [
                     `--force-device-scale-factor=${browserScale}`,
                     '--high-dpi-support=1',
