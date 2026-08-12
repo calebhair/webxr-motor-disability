@@ -37,17 +37,15 @@ AFRAME.registerComponent('calibrate-grip', {
         this.resetReadings();
         
         this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
-        this.handTrackingComponents = []
+        this.handTrackingComponents = {}
         for (const hand of this.hands) {
-            this.handTrackingComponents.push({
+            this.handTrackingComponents[hand.id] = {
                 hand,
                 handTrackingControls: hand.components['hand-tracking-controls'],
                 grabControls: hand.components['hand-tracking-grab-controls'],
-            });
+            };
         }
 
-        this.jointPoses = this.handTrackingComponents[0].handTrackingControls.jointPoses;
-        
         this.nextReadingTime = 0;
         
         // Cached instances
@@ -72,9 +70,10 @@ AFRAME.registerComponent('calibrate-grip', {
         }
     },
     
-    startRecording: function (pointName: string) {
+    startRecording: function (pointName: string, hand: "leftHand" | "rightHand") {
         this.currentlyRecording = true;
         this.currentPointName = pointName;
+        this.recordingHand = hand;
     },
     
     stopRecording: function () {
@@ -84,7 +83,8 @@ AFRAME.registerComponent('calibrate-grip', {
     
     _recordReading: function () {
         const { newPosition } = this;
-        newPosition.setFromMatrixPosition(this.indexTipPose.fromArray(this.jointPoses, HandJointIDs.INDEX_TIP * 16));
+        const fingertip = this.handTrackingComponents[this.recordingHand].handTrackingControls.bones.find(b => b.name === 'index-finger-tip')
+        newPosition.copy(fingertip.position)
 
         if (this.readings.length >= MAX_READINGS) {
             const lastUpdatedIndex = mod(this.mostRecentIndex + 1, MAX_READINGS);

@@ -13,8 +13,8 @@ AFRAME.registerComponent('hand-touch-pointers', {
         // so once we assign the fingertip bone Object3D here, position tracking is automatic
         this.leftSpace = { current: null }
         this.rightSpace = { current: null }
-        this.leftPointer = createTouchPointer(getCamera, this.leftSpace, {}, options, 'touch')
-        this.rightPointer = createTouchPointer(getCamera, this.rightSpace, {}, options, 'touch')
+        this.leftPointer = createTouchPointer(getCamera, this.leftSpace, { hand: 'leftHand' }, options, 'touch')
+        this.rightPointer = createTouchPointer(getCamera, this.rightSpace, { hand: 'rightHand' }, options, 'touch')
 
         // Use combined pointer for performance
         this.combined = new CombinedPointer(true) // true = allow both hands active simultaneously
