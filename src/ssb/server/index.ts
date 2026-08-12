@@ -1,4 +1,4 @@
-import {setupSocketStreamedBrowser} from "./socket.ts";
+import {setupSocketStreamedBrowser} from './socket.ts';
 
 const { server } = setupSocketStreamedBrowser();
 

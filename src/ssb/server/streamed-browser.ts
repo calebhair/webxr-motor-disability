@@ -1,9 +1,9 @@
 import {
-  type Browser, type Page, type CDPSession,
-  chromium, devices
+    type Browser, type Page, type CDPSession,
+    chromium,
 } from 'playwright';
-import { onPageLoad } from "./preload.ts";
-import {readFileSync} from "node:fs";
+import { onPageLoad } from './preload.ts';
+import {readFileSync} from 'node:fs';
 
 // Load air datepicker manually, due to restrictions on addInitScript
 const airDatepickerBundle = readFileSync('./node_modules/air-datepicker/air-datepicker.js', 'utf-8');
@@ -12,10 +12,10 @@ const simpleKeyboardBundle = readFileSync('./node_modules/simple-keyboard/build/
 const simpleKeyboardCSS = readFileSync('./node_modules/simple-keyboard/build/css/index.css', 'utf-8');
 
 const BrowserStates = Object.freeze({
-  UNSTARTED: Symbol("unstarted"),
-  STARTING:  Symbol("starting"),
-  STARTED:   Symbol("started"),
-  STOPPED:   Symbol("stopped"),
+    UNSTARTED: Symbol('unstarted'),
+    STARTING:  Symbol('starting'),
+    STARTED:   Symbol('started'),
+    STOPPED:   Symbol('stopped'),
 });
 type BrowserStates = typeof BrowserStates[keyof typeof BrowserStates]
 
@@ -23,166 +23,166 @@ const noop = () => {};
 const STOP_RETRY_TIMEOUT = 1000;
 
 class StreamedBrowser {
-  private browser: Browser;
-  private page: Page;
-  private onScreencastFrame: Function
-  private onBrowserStarted: Function;
-  private state: BrowserStates = BrowserStates.UNSTARTED;
-  private abortController: AbortController;
-  private cdpSession: CDPSession;
+    private browser: Browser;
+    private page: Page;
+    private onScreencastFrame: Function;
+    private onBrowserStarted: Function;
+    private state: BrowserStates = BrowserStates.UNSTARTED;
+    private abortController: AbortController;
+    private cdpSession: CDPSession;
 
-  /**
+    /**
    * @param onScreencastFrame function called on each screencast frame; passes Base64-encoded 
    * string of compressed frame image, and sessionId.
    * @param onBrowserStarted optional, called once the browser has started, passes browser instance.
    */
-  constructor(onScreencastFrame: Function, onBrowserStarted: Function = noop) {
-    this.onScreencastFrame = onScreencastFrame;
-    this.onBrowserStarted = onBrowserStarted;
-    this.abortController = new AbortController();
-  }
+    constructor(onScreencastFrame: Function, onBrowserStarted: Function = noop) {
+        this.onScreencastFrame = onScreencastFrame;
+        this.onBrowserStarted = onBrowserStarted;
+        this.abortController = new AbortController();
+    }
 
-  /**
+    /**
    * Starts the browser (if not started, opens the URL, and starts streaming via Chrome CDP.
    */
-  async streamUrl({ targetUrl, width, height, isMobile, browserScale }) {
-    if (this.state !== BrowserStates.UNSTARTED) {
-      console.warn(`Streamed browser requested to start when state is ${String(this.state)}`);
+    async streamUrl({ targetUrl, width, height, isMobile, browserScale }) {
+        if (this.state !== BrowserStates.UNSTARTED) {
+            console.warn(`Streamed browser requested to start when state is ${String(this.state)}`);
+        }
+        this.state = BrowserStates.STARTING;
+
+        width = parseInt(width);
+        height = parseInt(height);
+        isMobile = isMobile === 'true';
+        browserScale = parseFloat(browserScale);
+
+        if (!this.browser) {
+            this.browser = await chromium.launch({
+                headless: false, // Must be headless for auto-scaling
+                args: [
+                    `--force-device-scale-factor=${browserScale}`,
+                    '--high-dpi-support=1',
+                    '--use-gl=angle',
+                    '--use-angle=gl', // or 'd3d11' on Windows for native D3D backend TODO
+                    '--enable-gpu-rasterization',
+                    '--ignore-gpu-blocklist',
+                ],
+            });
+        }
+
+        await this.setupPage(targetUrl, width, height, isMobile, browserScale);
+        await this.setupCDP();
+
+        this.state = BrowserStates.STARTED;
+        this.onBrowserStarted(this.browser);
     }
-    this.state = BrowserStates.STARTING;
 
-    width = parseInt(width);
-    height = parseInt(height);
-    isMobile = isMobile === 'true';
-    browserScale = parseFloat(browserScale);
+    private async setupPage(targetUrl: string, width: number, height: number, isMobile: boolean, browserScale) {
+        const page = this.page = await this.browser.newPage({
+            viewport: { width, height },
+            isMobile,
+            hasTouch: true,
+            deviceScaleFactor: browserScale,
+        });
 
-    if (!this.browser) {
-      this.browser = await chromium.launch({
-        headless: true, // Must be headless for auto-scaling
-        args: [
-          `--force-device-scale-factor=${browserScale}`,
-          '--high-dpi-support=1',
-          '--use-gl=angle',
-          '--use-angle=gl', // or 'd3d11' on Windows for native D3D backend TODO
-          '--enable-gpu-rasterization',
-          '--ignore-gpu-blocklist',
-        ],
-      });
-    }
-
-    await this.setupPage(targetUrl, width, height, isMobile, browserScale);
-    await this.setupCDP();
-
-    this.state = BrowserStates.STARTED;
-    this.onBrowserStarted(this.browser);
-  }
-
-  private async setupPage(targetUrl: string, width: number, height: number, isMobile: boolean, browserScale) {
-    const page = this.page = await this.browser.newPage({
-      viewport: { width, height },
-      isMobile,
-      hasTouch: true,
-      deviceScaleFactor: browserScale,
-    });
-
-    page.on('console', (msg) =>{
-      console.log(`Browser console (${msg.type()}): ${msg.text()}`)
-    });
-    page.on('pageerror', (err) => {
-      console.log(`Browser error: ${err}`)
-    });
+        page.on('console', (msg) =>{
+            console.log(`Browser console (${msg.type()}): ${msg.text()}`);
+        });
+        page.on('pageerror', (err) => {
+            console.log(`Browser error: ${err}`);
+        });
   
-    // Preload air datepicker via 
-    await page.addInitScript({
-      content: `
+        // Preload air datepicker via 
+        await page.addInitScript({
+            content: `
         ${airDatepickerBundle}
         document.addEventListener("DOMContentLoaded", () => {        
           const style = document.createElement('style');
           style.textContent = ${JSON.stringify(airDatepickerCSS)};
           document.head.appendChild(style);
         });
-      `
-    });
-    await page.addInitScript({
-      content: `
+      `,
+        });
+        await page.addInitScript({
+            content: `
         ${simpleKeyboardBundle}
         document.addEventListener("DOMContentLoaded", () => {        
           const style = document.createElement('style');
           style.textContent = ${JSON.stringify(simpleKeyboardCSS)};
           document.head.appendChild(style);
         });
-      `
-    });
-    await page.addInitScript(onPageLoad);
+      `,
+        });
+        await page.addInitScript(onPageLoad);
     
-    try {
-      await page.goto(targetUrl, { signal: this.abortController.signal });
-    } catch (e) {
-      if (e.name !== 'AbortError') throw e; // Ignore AbortError, as it's a feature to allow quickly shutting down the browser
+        try {
+            await page.goto(targetUrl, { signal: this.abortController.signal });
+        } catch (e) {
+            if (e.name !== 'AbortError') throw e; // Ignore AbortError, as it's a feature to allow quickly shutting down the browser
+        }
+    
+        return page;
     }
-    
-    return page;
-  }
 
-  /**
+    /**
    * Chrome DevTools Protocol (CDP) is used for screensharing and more.
    */
-  private async setupCDP() {
-    const { page } = this;
-    const cdpSession = this.cdpSession = await page.context().newCDPSession(page);
-    await cdpSession.send('Page.startScreencast', { format: 'jpeg', quality: 80 });
+    private async setupCDP() {
+        const { page } = this;
+        const cdpSession = this.cdpSession = await page.context().newCDPSession(page);
+        await cdpSession.send('Page.startScreencast', { format: 'jpeg', quality: 80 });
 
-    cdpSession.on('Page.screencastFrame', async ({ data, sessionId }) => {
-      this.onScreencastFrame(data, sessionId);
-      try {
-        await cdpSession.send('Page.screencastFrameAck', { sessionId });
-      } catch (e) {
-        // During frequent reloads, the browser context can be closed during frame event. Ignore this, throw otherwise.
-        if (e.message !== 'cdpSession.send: Target page, context or browser has been closed') throw e
-      }
-    });
-  }
+        cdpSession.on('Page.screencastFrame', async ({ data, sessionId }) => {
+            this.onScreencastFrame(data, sessionId);
+            try {
+                await cdpSession.send('Page.screencastFrameAck', { sessionId });
+            } catch (e) {
+                // During frequent reloads, the browser context can be closed during frame event. Ignore this, throw otherwise.
+                if (e.message !== 'cdpSession.send: Target page, context or browser has been closed') throw e;
+            }
+        });
+    }
   
-  async stopStream() {
+    async stopStream() {
     // If not running, nothing to stop
-    if (this.state === BrowserStates.UNSTARTED || this.state === BrowserStates.STOPPED) {
-      console.warn(`Browser stream ${String(this.state)}`);
-      return;
-    }
+        if (this.state === BrowserStates.UNSTARTED || this.state === BrowserStates.STOPPED) {
+            console.warn(`Browser stream ${String(this.state)}`);
+            return;
+        }
 
-    // If the browser hasn't been started, wait until it starts before closing it
-    if (this.state === BrowserStates.STARTING) {
-      console.warn('Browser stream starting after requested stop; aborting.');
-      this.abortController.abort('Stopping');
-      setTimeout(() => this.stopStream(), STOP_RETRY_TIMEOUT);
-      return;
-    }
+        // If the browser hasn't been started, wait until it starts before closing it
+        if (this.state === BrowserStates.STARTING) {
+            console.warn('Browser stream starting after requested stop; aborting.');
+            this.abortController.abort('Stopping');
+            setTimeout(() => this.stopStream(), STOP_RETRY_TIMEOUT);
+            return;
+        }
 
-    console.log('Closing stream...');
-    if (!this.page.isClosed()) await this.page?.close()
-    if (this.browser.isConnected()) await this.browser.close()
-  }
+        console.log('Closing stream...');
+        if (!this.page.isClosed()) await this.page?.close();
+        if (this.browser.isConnected()) await this.browser.close();
+    }
   
-  async click({ x, y }) {
-    await this.page?.mouse.click(x, y);
-  }
+    async click({ x, y }) {
+        await this.page?.mouse.click(x, y);
+    }
 
-  /**
+    /**
    * Dispatches an arbitrary touch event with arbitrary points via CDP.
    * @param eventType the touch event (e.g., touchStart, touchMove, touchEnd)
    * @param touchPoints the touch points to pass, in the form of a list: [ {x, y, id}, {...} ]
    */
-  async dispatchTouchEvent({ eventType, touchPoints }) {
-    try {
-      await this.cdpSession?.send('Input.dispatchTouchEvent', {
-        type: eventType,
-        touchPoints,
-      });
+    async dispatchTouchEvent({ eventType, touchPoints }) {
+        try {
+            await this.cdpSession?.send('Input.dispatchTouchEvent', {
+                type: eventType,
+                touchPoints,
+            });
+        }
+        catch (e) {
+            console.warn(e);
+        }
     }
-    catch (e) {
-      console.warn(e)
-    }
-  }
 }
 
-export default StreamedBrowser
+export default StreamedBrowser;

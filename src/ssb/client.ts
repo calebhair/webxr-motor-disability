@@ -1,4 +1,4 @@
-﻿import {io, type Socket} from "socket.io-client";
+﻿import {io, type Socket} from 'socket.io-client';
 
 export function setupSocket(params, canvas: HTMLCanvasElement) {
     const browserParams = {
@@ -7,14 +7,14 @@ export function setupSocket(params, canvas: HTMLCanvasElement) {
         height: params.canvasResolution.height,
         isMobile: params.isMobile,
         browserScale: 1 / params.canvasScale,
-    }
+    };
     const socket = io(params.streamedBrowserServerUrl, { query: new URLSearchParams(browserParams).toString() });
 
     const ctx = canvas.getContext('2d');
 
     canvas.addEventListener('click', (event) => {
         socket.emit('click', { x: canvas.offsetLeft + event.x,
-            y: canvas.offsetTop + event.y,});
+            y: canvas.offsetTop + event.y});
     });
 
     setupTouchHandlers(socket, canvas, browserParams.browserScale);

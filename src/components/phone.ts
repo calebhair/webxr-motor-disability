@@ -1,5 +1,5 @@
 ﻿import AFRAME from 'aframe';
-import {setupSocket} from "../ssb/client.ts";
+import {setupSocket} from '../ssb/client.ts';
 
 const THREE = AFRAME.THREE;
 
@@ -8,17 +8,17 @@ const mm = (millimetres: number) => millimetres / 1000;
 const streamedBrowserParams = {
     streamedBrowserServerUrl: "https://143.117.93.180:3000",
     targetUrl: 'https://testpages.eviltester.com/pages/forms/text-inputs/',
-    canvasSize: { width: "100vmax", height: "100vmax" },
+    canvasSize: { width: '100vmax', height: '100vmax' },
     canvasResolution: { width: '430', height: '932' },
     physicalSize: { width: mm(77.6), height: mm(160.7) },
     canvasScale: 1, // Inversely proportional to the resolution at the same scale. Making this 2 will reduce the pixels but retain the same size.
-    isMobile: "true",
+    isMobile: 'true',
 };
 
 AFRAME.registerComponent('screen', {
     init: function () {
         console.log('Adding screen');
-        const { data, el } = this;
+        const { el } = this;
 
         const canvas = <HTMLCanvasElement> document.getElementById('streamed-browser-canvas');
         canvas.style.width = streamedBrowserParams.canvasSize.width;
@@ -34,10 +34,10 @@ AFRAME.registerComponent('screen', {
         const { width, height } = streamedBrowserParams.physicalSize;
         const deviceDepth = 0.01;
 
-        el.object3D.position.set(0, 0, deviceDepth/2 + 0.001) // For z-fighting
+        el.object3D.position.set(0, 0, deviceDepth/2 + 0.001); // For z-fighting
         this.geometry = new THREE.PlaneGeometry(width, height);
         this.texture = new THREE.CanvasTexture(canvas);
-        this.texture.colorSpace = THREE.SRGBColorSpace
+        this.texture.colorSpace = THREE.SRGBColorSpace;
         this.material = new THREE.MeshBasicMaterial({ map: this.texture });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         el.setObject3D('mesh', this.mesh);
@@ -48,13 +48,13 @@ AFRAME.registerComponent('screen', {
         document.getElementById('browser-device').setObject3D('mesh', deviceMesh);
     },
 
-    tick: function (time, timeDelta) {
+    tick: function () {
         this.texture.needsUpdate = true;
     },
 
     remove: function () {
         this.el.removeObject3D('mesh');
-    }
+    },
 });
 
 AFRAME.registerComponent('touchable-plane', {
@@ -75,7 +75,7 @@ AFRAME.registerComponent('touchable-plane', {
         this.data.height = streamedBrowserParams.physicalSize.height;
 
         this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
-        this.handTrackingComponents = []
+        this.handTrackingComponents = [];
         for (const hand of this.hands) {
             this.handTrackingComponents.push({
                 hand,
@@ -118,7 +118,7 @@ AFRAME.registerComponent('touchable-plane', {
                     texturePos: {
                         // Normalise to be from top left
                         x: (this.localPos.x + width / 2) / width,
-                        y: 1 - (this.localPos.y + height / 2) / height
+                        y: 1 - (this.localPos.y + height / 2) / height,
                     },
                     hand,
                 };
@@ -135,5 +135,5 @@ AFRAME.registerComponent('touchable-plane', {
             this.isTouching = false;
             this.el.emit('touchEnd');
         }
-    }
+    },
 });

@@ -10,7 +10,7 @@ const UNSTABLE_COLOR = new THREE.Color(0xff0000);
 const STABLE_COLOR = new THREE.Color(0x00ffff);
 const axes = ['x', 'y', 'z'];
 
-function mod(n, m) {
+function mod(n: number, m: number) {
     return ((n % m) + m) % m;
 }
 
@@ -33,9 +33,9 @@ AFRAME.registerComponent('calibrate-grip', {
     gripSnapshots: {},
     
     resetReadings: function() {
-        this.readings?.forEach((r) => {
-            this.el.removeChild(r);
-        })
+        this.readings?.forEach((reading: HTMLElement) => {
+            this.el.removeChild(reading);
+        });
 
         this.readings = [];
         this.mostRecentIndex = -1;
@@ -56,11 +56,10 @@ AFRAME.registerComponent('calibrate-grip', {
         this.currentHandTracking = null;
         
         // Cached instances
-        this.indexTipPose = new THREE.Matrix4()
-        this.newPosition = new THREE.Vector3()
+        this.newPosition = new THREE.Vector3();
     },
 
-    tick: function (time, timeDelta) {
+    tick: function (time) {
         if (!this.currentlyRecording) return;
         if (time > this.nextReadingTime) {
             this._recordReading();
@@ -69,7 +68,7 @@ AFRAME.registerComponent('calibrate-grip', {
 
         // If sufficient readings and range is close enough
         if (this.readings.length >= MINIMUM_STABLE_DISTANCE && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
-            const stablePointMarker = this._createMarker(this.readingAverage, '#00ff00')
+            const stablePointMarker = this._createMarker(this.readingAverage, '#00ff00');
             this.el.appendChild(stablePointMarker);
 
             this.finalizePoint();
@@ -77,11 +76,11 @@ AFRAME.registerComponent('calibrate-grip', {
         }
     },
     
-    startRecording(pointName: string, handId: "leftHand" | "rightHand") {
+    startRecording(pointName: string, handId: 'leftHand' | 'rightHand') {
         this.currentlyRecording = true;
         this.currentPointName = pointName;
-        if (handId === "leftHand") this.currentHandTracking = this.leftHandTracking;
-        else if (handId === "rightHand") this.currentHandTracking = this.rightHandTracking;
+        if (handId === 'leftHand') this.currentHandTracking = this.leftHandTracking;
+        else if (handId === 'rightHand') this.currentHandTracking = this.rightHandTracking;
         else throw new Error(`Invalid hand ID: ${handId}`);
     },
     
@@ -101,14 +100,14 @@ AFRAME.registerComponent('calibrate-grip', {
     },
     
     getRelativePositionOfJoint(jointName: string, worldPosition: THREE.Vector3): THREE.Vector3 {
-        const joint = this.currentHandTracking.bones.find(b => b.name === jointName);
+        const joint = this.currentHandTracking.bones.find(bone => bone.name === jointName);
         return worldPosition.clone().sub(joint.position);
     },
     
     _recordReading: function () {
         const { newPosition } = this;
-        const fingertip = this.currentHandTracking.bones.find(b => b.name === 'index-finger-tip')
-        newPosition.copy(fingertip.position)
+        const fingertip = this.currentHandTracking.bones.find(bone => bone.name === 'index-finger-tip');
+        newPosition.copy(fingertip.position);
 
         if (this.readings.length >= MAX_READINGS) {
             const lastUpdatedIndex = mod(this.mostRecentIndex + 1, MAX_READINGS);
@@ -132,24 +131,24 @@ AFRAME.registerComponent('calibrate-grip', {
         this.el.appendChild(newMarker);
     },
     
-    _createMarker(position, color: string) {
-        const newMarker = document.createElement("a-icosahedron");
+    _createMarker(position: THREE.Vector3, color: string) {
+        const newMarker = document.createElement('a-icosahedron');
         newMarker.setAttribute('color', color);
         newMarker.setAttribute('radius', '0.01');
         newMarker.setAttribute('position', position);
         return newMarker;
     },
     
-    _getDistanceAsColor(distance) {
+    _getDistanceAsColor(distance: number) {
         const alpha = Math.min(distance / MINIMUM_STABLE_DISTANCE, 1);
-        return new THREE.Color().lerpColors(STABLE_COLOR, UNSTABLE_COLOR, alpha)
+        return new THREE.Color().lerpColors(STABLE_COLOR, UNSTABLE_COLOR, alpha);
     },
 
     _calculateReadingsRange() {
         const lowerVector = new THREE.Vector3(Infinity, Infinity, Infinity);
         const upperVector = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
 
-        this.readings.forEach(reading => {
+        this.readings.forEach((reading: HTMLElement) => {
             const position = reading.getAttribute('position');
             for (const axis of axes) {
                 if (position[axis] > upperVector[axis]) upperVector[axis] = position[axis];
@@ -166,7 +165,7 @@ AFRAME.registerComponent('calibrate-grip', {
         if (readings.length === 0) return readingAverage;
         
         readingAverage.set(0, 0, 0);
-        readings.forEach(reading => {
+        readings.forEach((reading: HTMLElement) => {
             readingAverage.add(reading.getAttribute('position'));
         });
         return readingAverage.divideScalar(readings.length);

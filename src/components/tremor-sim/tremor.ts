@@ -1,12 +1,12 @@
 import AFRAME from 'aframe';
-import {getChildrenIDsRecursively, HandJointIDs} from "./hand-helpers.ts";
+import {getChildrenIDsRecursively, HandJointIDs} from './hand-helpers.ts';
 
 const THREE = AFRAME.THREE;
 const { MathUtils } = THREE;
 const degreeInRad = Math.PI / 180;
 
 const amplitudeDegrees = 1;
-const tremorHz = 10
+const tremorHz = 10;
 
 export class Tremor {
     // Cache matrices to avoid reallocating each frame
@@ -27,25 +27,25 @@ export class Tremor {
     }
 
 
-    applyTremor(time) {
+    applyTremor(time: number) {
         const changeVec = Array.from({ length: 3 }, () => {
             // time is in ms, divide by 1000 to get seconds, multiply by 2PI to get a full cycle per second.
             const rhythm = Math.sin(time / 500 * Math.PI * tremorHz);
             return rhythm * amplitudeDegrees * degreeInRad * MathUtils.randFloat(0.8, 1.1);
-        })
+        });
         this.rotateJoint(HandJointIDs.WRIST, ...changeVec);
     }
 
-    translateHand(x, y, z){
+    translateHand(x: number, y: number, z: number){
         this._changeMatrix.makeTranslation(x, y, z);
         for (let jointIndex = 0; jointIndex < 25; jointIndex++) {
-            this._loadJointMatrix(jointIndex)
+            this._loadJointMatrix(jointIndex);
             this._jointPose.premultiply(this._changeMatrix);
-            this._setJointMatrix(jointIndex)
+            this._setJointMatrix(jointIndex);
         }
     }
 
-    rotateJoint(targetJointID: HandJointIDs, x, y, z) {
+    rotateJoint(targetJointID: HandJointIDs, x: number, y: number, z: number) {
         const pivotMatrix = this._pivotMatrix.fromArray(this.jointPoses, targetJointID * 16);
         const pivotPos = this._pivotPos.setFromMatrixPosition(pivotMatrix);
 
@@ -61,7 +61,7 @@ export class Tremor {
 
         const children = getChildrenIDsRecursively(targetJointID);
         for (const jointID of children.concat(targetJointID)) {
-            this._loadJointMatrix(jointID)
+            this._loadJointMatrix(jointID);
 
             // Find this joint's position relative to the pivot
             this._relativePosition.setFromMatrixPosition(this._jointPose).sub(pivotPos);
@@ -72,17 +72,17 @@ export class Tremor {
             // Move the relative position back to world position
             this._jointPose.setPosition(pivotPos.x + this._relativePosition.x, pivotPos.y + this._relativePosition.y, pivotPos.z + this._relativePosition.z);
 
-            this._setJointMatrix(jointID)
+            this._setJointMatrix(jointID);
         }
     }
 
     // Reads the pose of the joint at the given index to the matrix _jointPose
-    _loadJointMatrix(jointIndex) {
+    _loadJointMatrix(jointIndex: number) {
         this._jointPose.fromArray(this.jointPoses, jointIndex * 16);
     }
 
     // Writes the pose of the matrix _jointPose to the joint at the given index
-    _setJointMatrix(jointIndex) {
+    _setJointMatrix(jointIndex: number) {
         this._jointPose.toArray(this.jointPoses, jointIndex * 16);
     }
 

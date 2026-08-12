@@ -1,5 +1,5 @@
 ﻿import AFRAME from 'aframe';
-import {Fingers, HandJointIDs} from "./hand-helpers.ts";
+import {Fingers, HandJointIDs} from './hand-helpers.ts';
 
 const THREE = AFRAME.THREE;
 
@@ -27,7 +27,7 @@ export const PalmGrabFunctions = {
         if (!this.handTrackingControls.hasPoses) return;
 
         const fingertips = [Fingers.INDEX, Fingers.MIDDLE, Fingers.RING];
-        let sum = 0
+        let sum = 0;
         for (const fingertip of fingertips) {
             sum += this._getTipDistanceFromMetacarpal(fingertip);
         }
@@ -57,7 +57,7 @@ export const PalmGrabFunctions = {
     },
 
     onPalmGrabStarted : function () {
-        AFRAME.log('palmgrabstarted')
+        AFRAME.log('palmgrabstarted');
         const { grabControls } = this;
         if (!grabControls.collidedEl && !grabControls.grabbedEl) { return; }
         this._alignCollidedElWithHand();
@@ -74,12 +74,12 @@ export const PalmGrabFunctions = {
         const offsetPos = new THREE.Vector3(0, 0, -0.05);
         const offsetRot = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 0), Math.PI/2);
 
-        jointPose.fromArray(this.jointPoses, HandJointIDs.WRIST * 16)
+        jointPose.fromArray(this.jointPoses, HandJointIDs.WRIST * 16);
         wristWorldPos.setFromMatrixPosition(jointPose);
         wristWorldRot.setFromRotationMatrix(jointPose);
         
         const worldPos = wristWorldPos.clone().add(
-            offsetPos.clone().applyQuaternion(wristWorldRot)
+            offsetPos.clone().applyQuaternion(wristWorldRot),
         );
 
         const worldRot = wristWorldRot.clone().multiply(offsetRot);
@@ -88,14 +88,14 @@ export const PalmGrabFunctions = {
         collidedEl.setAttribute('position', {
             x: worldPos.x,
             y: worldPos.y,
-            z: worldPos.z
+            z: worldPos.z,
         });
         collidedEl.object3D.quaternion.copy(worldRot);
     },
 
     onPalmGrabEnded : function () {
-        AFRAME.log(`palmgrabended`)
+        AFRAME.log(`palmgrabended`);
         this.grabControls.releaseGrabbedEntity();
     },
 
-}
+};

@@ -1,8 +1,8 @@
 ﻿import { createServer } from 'node:https';
-import * as fs from "node:fs";
+import * as fs from 'node:fs';
 import { Server, Socket } from 'socket.io';
 
-import StreamedBrowser from "./streamed-browser.ts";
+import StreamedBrowser from './streamed-browser.ts';
 
 export function setupSocketStreamedBrowser() {
     // Create HTTPS server to allow immersive VR/AR
@@ -12,7 +12,7 @@ export function setupSocketStreamedBrowser() {
     });
 
     const io = new Server(server, {
-        cors: { origin: '*', }, // Allow cross-origin, as arbitrary IP addresses on the LAN may connect to this
+        cors: { origin: '*' }, // Allow cross-origin, as arbitrary IP addresses on the LAN may connect to this
     });
     io.on('connection', onSocketConnect);
 
@@ -32,17 +32,17 @@ export function setupSocketStreamedBrowser() {
         });
     }
 
-    return { server, io }
+    return { server, io };
 }
 
 async function setupBrowserForSocket(socket: Socket, onBrowserFrame: Function) {
     const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame);
     socket.on('click', async eventData => {
         await sb.click(eventData);
-    })
+    });
     socket.on('dispatchTouchEvent', async eventData => {
         await sb.dispatchTouchEvent(eventData);
-    })
+    });
 
     await sb.streamUrl(socket.handshake.query);
 }
