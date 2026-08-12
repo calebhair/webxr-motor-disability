@@ -18,7 +18,7 @@ handControlsPrototype.tick = function(time, timeDelta) {
     if (!this.hasPoses) return;
 
     // Tremor tick
-    this.tremor.applyTremor(time);
+    // this.tremor.applyTremor(time);
     this.updateHandModel();
     this.detectGesture();
     this.updateWristObject();

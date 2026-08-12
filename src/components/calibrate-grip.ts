@@ -1,22 +1,36 @@
 ﻿import AFRAME from 'aframe';
-import {HandJointIDs} from "./tremor-sim/hand-helpers.ts";
+import * as THREE from 'three';
 
-const THREE = AFRAME.THREE;
+// const THREE = AFRAME.THREE;
 const MAX_READINGS = 10;
 const READING_DELAY_MS = 100;
 const MINIMUM_STABLE_DISTANCE = 0.01; // How far two points can be from each other to be considered stable
 const LENIENCE = 1; // If the average distance from previous point is less than MINIMUM_STABLE_DISTANCE * LENIENCE, point is accepted
 const UNSTABLE_COLOR = new THREE.Color(0xff0000);
 const STABLE_COLOR = new THREE.Color(0x00ffff);
+const axes = ['x', 'y', 'z'];
 
 function mod(n, m) {
     return ((n % m) + m) % m;
 }
 
-const axes = ['x', 'y', 'z'];
+class GripSnapshot {
+    public worldPos: THREE.Vector3;
+    public handRelativePositions: Map<string, THREE.Vector3>;
+
+    constructor() {
+        this.worldPos = new THREE.Vector3();
+        this.handRelativePositions = new Map();
+    }
+    
+    addRelativePosition(relativePosition: THREE.Vector3, jointName: string): void {
+        this.handRelativePositions.set(jointName, relativePosition);
+    }
+}
+
 
 AFRAME.registerComponent('calibrate-grip', {
-    recordedPoints: {},
+    gripSnapshots: {},
     
     resetReadings: function() {
         this.readings?.forEach((r) => {
@@ -29,6 +43,7 @@ AFRAME.registerComponent('calibrate-grip', {
         this.readingRange = Infinity;
         this.currentlyRecording = false;
         this.currentPointName = null;
+        this.nextReadingTime = 0;
     },
     
     play: function () {
@@ -36,17 +51,9 @@ AFRAME.registerComponent('calibrate-grip', {
         this.initialised = true;
         this.resetReadings();
         
-        this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
-        this.handTrackingComponents = {}
-        for (const hand of this.hands) {
-            this.handTrackingComponents[hand.id] = {
-                hand,
-                handTrackingControls: hand.components['hand-tracking-controls'],
-                grabControls: hand.components['hand-tracking-grab-controls'],
-            };
-        }
-
-        this.nextReadingTime = 0;
+        this.leftHandTracking = document.querySelector('#leftHand[hand-tracking-controls]');
+        this.rightHandTracking = document.querySelector('#rightHand[hand-tracking-controls]');
+        this.currentHandTracking = null;
         
         // Cached instances
         this.indexTipPose = new THREE.Matrix4()
@@ -65,25 +72,42 @@ AFRAME.registerComponent('calibrate-grip', {
             const stablePointMarker = this._createMarker(this.readingAverage, '#00ff00')
             this.el.appendChild(stablePointMarker);
 
-            this.recordedPoints[this.currentPointName] = this.readingAverage.clone();
+            this.finalizePoint();
             this.stopRecording();
         }
     },
     
-    startRecording: function (pointName: string, hand: "leftHand" | "rightHand") {
+    startRecording(pointName: string, handId: "leftHand" | "rightHand") {
         this.currentlyRecording = true;
         this.currentPointName = pointName;
-        this.recordingHand = hand;
+        if (handId === "leftHand") this.currentHandTracking = this.leftHandTracking;
+        else if (handId === "rightHand") this.currentHandTracking = this.rightHandTracking;
+        else throw new Error(`Invalid hand ID: ${handId}`);
     },
     
-    stopRecording: function () {
+    stopRecording() {
         this.currentlyRecording = false;
         this.resetReadings();
     },
     
+    finalizePoint() {
+        const gripSnapshot = new GripSnapshot();
+        gripSnapshot.worldPos = this.readingAverage.clone();
+        for (const jointName of ['thumb-metacarpal', 'index-finger-phalanx-proximal', 
+            'middle-finger-phalanx-proximal', 'ring-finger-phalanx-proximal', 'pinky-finger-phalanx-proximal']) {
+            gripSnapshot.addRelativePosition(this.getRelativePositionOfJoint(jointName), jointName);
+        }
+        this.gripSnapshots[this.currentPointName] = gripSnapshot;
+    },
+    
+    getRelativePositionOfJoint(jointName: string, worldPosition: THREE.Vector3): THREE.Vector3 {
+        const joint = this.currentHandTracking.bones.find(b => b.name === jointName);
+        return worldPosition.clone().sub(joint.position);
+    },
+    
     _recordReading: function () {
         const { newPosition } = this;
-        const fingertip = this.handTrackingComponents[this.recordingHand].handTrackingControls.bones.find(b => b.name === 'index-finger-tip')
+        const fingertip = this.currentHandTracking.bones.find(b => b.name === 'index-finger-tip')
         newPosition.copy(fingertip.position)
 
         if (this.readings.length >= MAX_READINGS) {
