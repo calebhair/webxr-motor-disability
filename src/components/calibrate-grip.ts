@@ -16,16 +16,25 @@ function mod(n, m) {
 const axes = ['x', 'y', 'z'];
 
 AFRAME.registerComponent('calibrate-grip', {
-    readings: [],
-    mostRecentIndex: -1,
-    readingAverage: new THREE.Vector3(),
-    readingRange: Infinity,
-    stablePoints: [],
-    recording: false,
+    recordedPoints: {},
+    
+    resetReadings: function() {
+        this.readings?.forEach((r) => {
+            this.el.removeChild(r);
+        })
+
+        this.readings = [];
+        this.mostRecentIndex = -1;
+        this.readingAverage = new THREE.Vector3();
+        this.readingRange = Infinity;
+        this.currentlyRecording = false;
+        this.currentPointName = null;
+    },
     
     play: function () {
         if (this.initialised) return;
         this.initialised = true;
+        this.resetReadings();
         
         this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
         this.handTrackingComponents = []
@@ -47,22 +56,33 @@ AFRAME.registerComponent('calibrate-grip', {
     },
 
     tick: function (time, timeDelta) {
-        if (!this.recording) return;
+        if (!this.currentlyRecording) return;
         if (time > this.nextReadingTime) {
-            this.recordReading();
+            this._recordReading();
             this.nextReadingTime = time + READING_DELAY_MS;
         }
 
         // If sufficient readings and range is close enough
         if (this.readings.length >= MINIMUM_STABLE_DISTANCE && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
-            this.stablePoints.push(this.readingAverage.clone());
-            const stablePointMarker = this.createMarker(this.readingAverage, '#00ff00')
+            const stablePointMarker = this._createMarker(this.readingAverage, '#00ff00')
             this.el.appendChild(stablePointMarker);
-            this.recording = false;
+
+            this.recordedPoints[this.currentPointName] = this.readingAverage.clone();
+            this.stopRecording();
         }
     },
     
-    recordReading: function () {
+    startRecording: function (pointName: string) {
+        this.currentlyRecording = true;
+        this.currentPointName = pointName;
+    },
+    
+    stopRecording: function () {
+        this.currentlyRecording = false;
+        this.resetReadings();
+    },
+    
+    _recordReading: function () {
         const { newPosition } = this;
         newPosition.setFromMatrixPosition(this.indexTipPose.fromArray(this.jointPoses, HandJointIDs.INDEX_TIP * 16));
 
@@ -73,22 +93,22 @@ AFRAME.registerComponent('calibrate-grip', {
             this.mostRecentIndex = lastUpdatedIndex;
 
             // Update color depending on distance from average
-            const distance = this.calculateAverageReading().distanceTo(lastUpdatedElement.object3D.position);
-            const color = this.getDistanceAsColor(distance);
+            const distance = this._calculateAverageReading().distanceTo(lastUpdatedElement.object3D.position);
+            const color = this._getDistanceAsColor(distance);
             lastUpdatedElement.setAttribute('color', `#${color.getHexString()}`);
 
             // Other updates
-            this.calculateReadingsRange();
+            this._calculateReadingsRange();
             return;
         }
         
-        const newMarker = this.createMarker(newPosition, '#ff0000');
+        const newMarker = this._createMarker(newPosition, '#ff0000');
         this.readings.push(newMarker);
         this.mostRecentIndex++;
         this.el.appendChild(newMarker);
     },
     
-    createMarker(position, color: string) {
+    _createMarker(position, color: string) {
         const newMarker = document.createElement("a-icosahedron");
         newMarker.setAttribute('color', color);
         newMarker.setAttribute('radius', '0.01');
@@ -96,12 +116,12 @@ AFRAME.registerComponent('calibrate-grip', {
         return newMarker;
     },
     
-    getDistanceAsColor(distance) {
+    _getDistanceAsColor(distance) {
         const alpha = Math.min(distance / MINIMUM_STABLE_DISTANCE, 1);
         return new THREE.Color().lerpColors(STABLE_COLOR, UNSTABLE_COLOR, alpha)
     },
 
-    calculateReadingsRange() {
+    _calculateReadingsRange() {
         const lowerVector = new THREE.Vector3(Infinity, Infinity, Infinity);
         const upperVector = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
 
@@ -117,7 +137,7 @@ AFRAME.registerComponent('calibrate-grip', {
         return this.readingRange;
     },
 
-    calculateAverageReading() {
+    _calculateAverageReading() {
         const { readingAverage, readings } = this;
         if (readings.length === 0) return readingAverage;
         

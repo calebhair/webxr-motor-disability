@@ -3,6 +3,7 @@
     "@playwright/browser-chromium": "^1.62.0",
     "@pmndrs/pointer-events": "^6.6.30",
     "@pmndrs/uikit": "^1.0.75",
+    "@pmndrs/uikit-horizon": "^1.0.75",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "aframe": "^1.8.0",
     "aframe-environment-component": "^1.5.0",

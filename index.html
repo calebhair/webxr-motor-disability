@@ -23,12 +23,12 @@
   <body>
     <canvas id="streamed-browser-canvas"></canvas>
 
-    <a-scene hand-touch-pointers>
+    <a-scene hand-touch-pointers log="console: false">
       <a-entity environment="preset: contact; dressingAmount: 10"></a-entity>
       <a-log position="0 1 -0.5" scale="0.1 0.1 0.1" grabbable></a-log>
 
-      <a-entity id="leftHand" hand-tracking-grab-controls="hand: left;" palm-grab></a-entity>
-      <a-entity id="rightHand" hand-tracking-grab-controls="hand: right;" palm-grab></a-entity>
+      <a-entity id="leftHand" hand-tracking-grab-controls="hand: left;"></a-entity>
+      <a-entity id="rightHand" hand-tracking-grab-controls="hand: right;"></a-entity>
 
       <a-entity id="calibrate-grip" calibrate-grip></a-entity>
       
@@ -36,7 +36,7 @@
         <a-entity id="screen" screen touchable-plane></a-entity>
       </a-entity>
       
-      <a-entity ui-root position="0.5 1 -0.5" scale="0.1 0.1 0.1"></a-entity>
+      <a-entity ui-root position="-0.3 1 -0.4" rotation="0 45 0"></a-entity>
     </a-scene>
 
   </body>

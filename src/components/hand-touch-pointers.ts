@@ -1,7 +1,6 @@
 ﻿// For interacting with uikit interfaces via hands
 import AFRAME from 'aframe';
 import {CombinedPointer, createTouchPointer} from '@pmndrs/pointer-events'
-import {HandJointIDs} from "./tremor-sim/hand-helpers.ts";
 
 const options = { hoverRadius: 0.1, downRadius: 0.03 }
 
@@ -38,7 +37,8 @@ AFRAME.registerComponent('hand-touch-pointers', {
     },
 
     _getFingertip: function (handTrackingControls) {
-        if (!handTrackingControls?.bones) return;
-        return handTrackingControls?.bones[HandJointIDs.INDEX_TIP];
-    }
+        const bones = handTrackingControls?.bones
+        if (!bones) return null
+        return bones.find(b => b.name === 'index-finger-tip') ?? null
+    },
 })
