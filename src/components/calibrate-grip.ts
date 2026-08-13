@@ -27,27 +27,40 @@ class GripPoint {
     private visualise: boolean = true;
     private visualisationMarker: HTMLElement;
     private readonly lastComputedAveragePoint: THREE.Vector3;
+    private readonly jointWorldPosition: THREE.Vector3;
+    private readonly jointWorldQuaternion: THREE.Quaternion;
     private readonly bonePositionCache: THREE.Vector3;
 
     constructor() {
         this.handRelativePositions = new Map();
         this.lastComputedAveragePoint = new THREE.Vector3();
         this.bonePositionCache = new THREE.Vector3();
+        this.jointWorldPosition = new THREE.Vector3();
+        this.jointWorldQuaternion = new THREE.Quaternion();
     }
     
     addRelativePosition(relativePosition: THREE.Vector3, jointName: string): void {
         this.handRelativePositions.set(jointName, relativePosition);
     }
-    
+
     getAveragePointInWorld(handTrackingComponent: AFRAME.Component) {
         const worldPositionSum = this.lastComputedAveragePoint.set(0, 0, 0);
-        this.handRelativePositions.forEach((relativePosition, jointName) => {
-            this.bonePositionCache.copy(handTrackingComponent.bones.find(bone => bone.name === jointName).position)
-                .sub(relativePosition);
+        this.handRelativePositions.forEach((localOffset, jointName) => {
+            const bone = handTrackingComponent.bones.find(bone => bone.name === jointName);
+            bone.getWorldPosition(this.jointWorldPosition);
+            bone.getWorldQuaternion(this.jointWorldQuaternion);
+
+            // Re-rotate the stored local offset by the joint's CURRENT orientation
+            this.bonePositionCache
+                .copy(localOffset)
+                .applyQuaternion(this.jointWorldQuaternion)
+                .add(this.jointWorldPosition);
+
             worldPositionSum.add(this.bonePositionCache);
         });
         worldPositionSum.divideScalar(this.handRelativePositions.size);
     }
+
     
     updateVisualisation(markerParent: HTMLElement): void {
         const { lastComputedAveragePoint } = this;
@@ -111,7 +124,7 @@ AFRAME.registerComponent('calibrate-grip', {
         }
 
         // If sufficient readings and range is close enough
-        if (this.readings.length >= MINIMUM_STABLE_DISTANCE && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
+        if (this.readings.length >= MAX_READINGS && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
             this.finalizePoint();
             this.stopRecording();
         }
@@ -148,7 +161,17 @@ AFRAME.registerComponent('calibrate-grip', {
     
     getRelativePositionToJoint(worldPosition: THREE.Vector3, jointName: string): THREE.Vector3 {
         const joint = this.grippingHandTrackingComp.bones.find(bone => bone.name === jointName);
-        return worldPosition.clone().sub(joint.position);
+
+        const jointWorldPosition = new THREE.Vector3();
+        const jointWorldQuaternion = new THREE.Quaternion();
+        joint.getWorldPosition(jointWorldPosition);
+        joint.getWorldQuaternion(jointWorldQuaternion);
+
+        const worldOffset = worldPosition.clone().sub(jointWorldPosition);
+
+        // Un-rotate into the joint's local frame — this is what makes it rotation-stable
+        return worldOffset.applyQuaternion(jointWorldQuaternion.invert());
+
     },
     
     _recordReading: function () {
