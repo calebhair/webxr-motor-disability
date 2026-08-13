@@ -79,6 +79,10 @@ class GripPoint {
 
         this.visualisationMarker.object3D.position.copy(this.lastAveragePoint);
     }
+    
+    deleteVisualisation(): void {
+        this.visualisationMarker?.parentNode.removeChild(this.visualisationMarker);
+    }
 }
 
 
@@ -158,6 +162,8 @@ AFRAME.registerComponent('calibrate-grip', {
     },
     
     _finalizePoint() {
+        this.gripPoints[this.currentPointName]?.deleteVisualisation();
+
         const gripPoint = new GripPoint();
         const worldPos = this.readingAverage.clone();
         for (const jointName of ['thumb-metacarpal', 'index-finger-tip']) {
