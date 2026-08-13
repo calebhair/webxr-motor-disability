@@ -14,23 +14,60 @@ function mod(n: number, m: number) {
     return ((n % m) + m) % m;
 }
 
-class GripSnapshot {
-    public worldPos: THREE.Vector3;
-    public handRelativePositions: Map<string, THREE.Vector3>;
+function createMarker(position: THREE.Vector3, color: string) {
+    const newMarker = document.createElement('a-icosahedron');
+    newMarker.setAttribute('color', color);
+    newMarker.setAttribute('radius', '0.01');
+    newMarker.setAttribute('position', position);
+    return newMarker;
+}
+
+class GripPoint {
+    private handRelativePositions: Map<string, THREE.Vector3>;
+    private visualise: boolean = true;
+    private visualisationMarker: HTMLElement;
+    private readonly lastComputedAveragePoint: THREE.Vector3;
+    private readonly bonePositionCache: THREE.Vector3;
 
     constructor() {
-        this.worldPos = new THREE.Vector3();
         this.handRelativePositions = new Map();
+        this.lastComputedAveragePoint = new THREE.Vector3();
+        this.bonePositionCache = new THREE.Vector3();
     }
     
     addRelativePosition(relativePosition: THREE.Vector3, jointName: string): void {
         this.handRelativePositions.set(jointName, relativePosition);
     }
+    
+    getAveragePointInWorld(handTrackingComponent: AFRAME.Component) {
+        const worldPositionSum = this.lastComputedAveragePoint.set(0, 0, 0);
+        this.handRelativePositions.forEach((relativePosition, jointName) => {
+            this.bonePositionCache.copy(handTrackingComponent.bones.find(bone => bone.name === jointName).position)
+                .sub(relativePosition);
+            worldPositionSum.add(this.bonePositionCache);
+        });
+        worldPositionSum.divideScalar(this.handRelativePositions.size);
+    }
+    
+    updateVisualisation(markerParent: HTMLElement): void {
+        const { lastComputedAveragePoint } = this;
+        if (!this.visualisationMarker) {
+            this.visualisationMarker = createMarker(lastComputedAveragePoint, '#00ff00');
+            markerParent.appendChild(this.visualisationMarker);
+        }
+        
+        if (!this.visualise) {
+            this.visualisationMarker.setAttribute('visible', 'false');
+            return;
+        }
+
+        this.visualisationMarker.object3D.position.copy(this.lastComputedAveragePoint);
+    }
 }
 
 
 AFRAME.registerComponent('calibrate-grip', {
-    gripSnapshots: {},
+    gripPoints: {},
     
     resetReadings: function() {
         this.readings?.forEach((reading: HTMLElement) => {
@@ -51,15 +88,22 @@ AFRAME.registerComponent('calibrate-grip', {
         this.initialised = true;
         this.resetReadings();
         
-        this.leftHandTracking = document.querySelector('#leftHand[hand-tracking-controls]');
-        this.rightHandTracking = document.querySelector('#rightHand[hand-tracking-controls]');
-        this.currentHandTracking = null;
+        this.leftHandTracking = document.querySelector('#leftHand[hand-tracking-controls]').components['hand-tracking-controls'];
+        this.rightHandTracking = document.querySelector('#rightHand[hand-tracking-controls]').components['hand-tracking-controls'];
+        this.calibratingHandTrackingComp = null;
+        this.grippingHandTrackingComp = null;
         
         // Cached instances
         this.newPosition = new THREE.Vector3();
     },
 
     tick: function (time) {
+        for (const pointName in this.gripPoints) {
+            const gripPoint: GripPoint = this.gripPoints[pointName];
+            gripPoint.getAveragePointInWorld(this.grippingHandTrackingComp);
+            gripPoint.updateVisualisation(this.el);
+        }
+        
         if (!this.currentlyRecording) return;
         if (time > this.nextReadingTime) {
             this._recordReading();
@@ -68,20 +112,23 @@ AFRAME.registerComponent('calibrate-grip', {
 
         // If sufficient readings and range is close enough
         if (this.readings.length >= MINIMUM_STABLE_DISTANCE && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
-            const stablePointMarker = this._createMarker(this.readingAverage, '#00ff00');
-            this.el.appendChild(stablePointMarker);
-
             this.finalizePoint();
             this.stopRecording();
         }
     },
     
-    startRecording(pointName: string, handId: 'leftHand' | 'rightHand') {
+    startRecording(pointName: string, calibratingHandId: 'leftHand' | 'rightHand') {
         this.currentlyRecording = true;
         this.currentPointName = pointName;
-        if (handId === 'leftHand') this.currentHandTracking = this.leftHandTracking;
-        else if (handId === 'rightHand') this.currentHandTracking = this.rightHandTracking;
-        else throw new Error(`Invalid hand ID: ${handId}`);
+        if (calibratingHandId === 'leftHand') {
+            this.calibratingHandTrackingComp = this.leftHandTracking;
+            this.grippingHandTrackingComp = this.rightHandTracking;
+        }
+        else if (calibratingHandId === 'rightHand') {
+            this.calibratingHandTrackingComp = this.rightHandTracking;
+            this.grippingHandTrackingComp = this.leftHandTracking;
+        }
+        else throw new Error(`Invalid hand ID: ${calibratingHandId}`);
     },
     
     stopRecording() {
@@ -90,23 +137,23 @@ AFRAME.registerComponent('calibrate-grip', {
     },
     
     finalizePoint() {
-        const gripSnapshot = new GripSnapshot();
-        gripSnapshot.worldPos = this.readingAverage.clone();
+        const gripPoint = new GripPoint();
+        const worldPos = this.readingAverage.clone();
         for (const jointName of ['thumb-metacarpal', 'index-finger-phalanx-proximal', 
             'middle-finger-phalanx-proximal', 'ring-finger-phalanx-proximal', 'pinky-finger-phalanx-proximal']) {
-            gripSnapshot.addRelativePosition(this.getRelativePositionOfJoint(jointName), jointName);
+            gripPoint.addRelativePosition(this.getRelativePositionToJoint(worldPos, jointName), jointName);
         }
-        this.gripSnapshots[this.currentPointName] = gripSnapshot;
+        this.gripPoints[this.currentPointName] = gripPoint;
     },
     
-    getRelativePositionOfJoint(jointName: string, worldPosition: THREE.Vector3): THREE.Vector3 {
-        const joint = this.currentHandTracking.bones.find(bone => bone.name === jointName);
+    getRelativePositionToJoint(worldPosition: THREE.Vector3, jointName: string): THREE.Vector3 {
+        const joint = this.grippingHandTrackingComp.bones.find(bone => bone.name === jointName);
         return worldPosition.clone().sub(joint.position);
     },
     
     _recordReading: function () {
         const { newPosition } = this;
-        const fingertip = this.currentHandTracking.bones.find(bone => bone.name === 'index-finger-tip');
+        const fingertip = this.calibratingHandTrackingComp.bones.find(bone => bone.name === 'index-finger-tip');
         newPosition.copy(fingertip.position);
 
         if (this.readings.length >= MAX_READINGS) {
@@ -125,18 +172,10 @@ AFRAME.registerComponent('calibrate-grip', {
             return;
         }
         
-        const newMarker = this._createMarker(newPosition, '#ff0000');
+        const newMarker = createMarker(newPosition, '#ff0000');
         this.readings.push(newMarker);
         this.mostRecentIndex++;
         this.el.appendChild(newMarker);
-    },
-    
-    _createMarker(position: THREE.Vector3, color: string) {
-        const newMarker = document.createElement('a-icosahedron');
-        newMarker.setAttribute('color', color);
-        newMarker.setAttribute('radius', '0.01');
-        newMarker.setAttribute('position', position);
-        return newMarker;
     },
     
     _getDistanceAsColor(distance: number) {
