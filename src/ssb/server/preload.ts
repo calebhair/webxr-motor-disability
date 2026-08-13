@@ -10,8 +10,9 @@ export function onPageLoad() {
     let globalKeyboard: SimpleKeyboard;
     let kbContainer: HTMLDivElement;
     document.addEventListener('DOMContentLoaded', () => {
-        addSelectStyle();
         globalKeyboard = setupKeyboard();
+        addSelectStyle();
+        setupColorPicker();
         insertCustomOverlays();
 
         // In case elements are added (e.g., SPA)
@@ -187,4 +188,36 @@ export function onPageLoad() {
         });
     }
 
+    function setupColorPicker() {
+        document.querySelectorAll('input[type=color]:not([data-replaced])').forEach((colorInput: HTMLInputElement) => {
+            colorInput.setAttribute('data-replaced', 'true');
+
+            const pickr = Pickr.create({
+                el: colorInput,
+                theme: 'nano',
+                closeOnScroll: true,
+                useAsButton: true,
+                defaultRepresentation: 'HEX',
+
+                swatches: [
+                    'rgba(255, 255, 255, 1)',
+                    'rgba(0, 0, 0, 1)',
+                    'rgba(255, 0, 0, 1)',
+                    'rgba(0, 255, 0, 1)',
+                    'rgba(0, 0, 255, 1)',
+                    'rgba(255, 0, 255, 1)',
+                    'rgba(255, 255, 0, 1)',
+                ],
+
+                components: {
+                    preview: true, opacity: true, hue: true,
+                    interaction: { input: true },
+                },
+            });
+
+            pickr.on('change', (color) => {
+                colorInput.value = color.toHEXA().toString();
+            });
+        });
+    }
 }

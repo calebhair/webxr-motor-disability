@@ -10,6 +10,8 @@ const airDatepickerBundle = readFileSync('./node_modules/air-datepicker/air-date
 const airDatepickerCSS = readFileSync('./node_modules/air-datepicker/air-datepicker.css', 'utf-8');
 const simpleKeyboardBundle = readFileSync('./node_modules/simple-keyboard/build/index.js', 'utf-8');
 const simpleKeyboardCSS = readFileSync('./node_modules/simple-keyboard/build/css/index.css', 'utf-8');
+const pickrBundle = readFileSync('./node_modules/@simonwep/pickr/dist/pickr.min.js', 'utf-8');
+const pickrCSS = readFileSync('./node_modules/@simonwep/pickr/dist/themes/nano.min.css', 'utf-8');
 
 const BrowserStates = Object.freeze({
     UNSTARTED: Symbol('unstarted'),
@@ -92,27 +94,10 @@ class StreamedBrowser {
             console.log(`Browser error: ${err}`);
         });
   
-        // Preload air datepicker via 
-        await page.addInitScript({
-            content: `
-        ${airDatepickerBundle}
-        document.addEventListener("DOMContentLoaded", () => {        
-          const style = document.createElement('style');
-          style.textContent = ${JSON.stringify(airDatepickerCSS)};
-          document.head.appendChild(style);
-        });
-      `,
-        });
-        await page.addInitScript({
-            content: `
-        ${simpleKeyboardBundle}
-        document.addEventListener("DOMContentLoaded", () => {        
-          const style = document.createElement('style');
-          style.textContent = ${JSON.stringify(simpleKeyboardCSS)};
-          document.head.appendChild(style);
-        });
-      `,
-        });
+        // Preload air datepicker via
+        await this.loadLibraryAsInitScript(airDatepickerBundle, airDatepickerCSS);
+        await this.loadLibraryAsInitScript(simpleKeyboardBundle, simpleKeyboardCSS);
+        await this.loadLibraryAsInitScript(pickrBundle, pickrCSS);
         await page.addInitScript(onPageLoad);
     
         try {
@@ -182,6 +167,19 @@ class StreamedBrowser {
         catch (e) {
             console.warn(e);
         }
+    }
+
+    async loadLibraryAsInitScript(jsBundle: string, css: string) {
+        await this.page.addInitScript({
+            content: `
+        document.addEventListener("DOMContentLoaded", () => {        
+          const style = document.createElement('style');
+          style.textContent = ${JSON.stringify(css)};
+          document.head.appendChild(style);
+        });
+        ${jsBundle}
+      `,
+        });
     }
 }
 
