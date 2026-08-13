@@ -1,6 +1,5 @@
 ﻿import AFRAME from 'aframe';
 import {Tremor} from './tremor.ts';
-import {PalmGrabFunctions} from './palm-grab.ts';
 
 
 // Hand controls override
@@ -22,29 +21,4 @@ handControlsPrototype.tick = function(time, timeDelta) {
     this.updateHandModel();
     this.detectGesture();
     this.updateWristObject();
-};
-
-
-// Grab controls override
-const grabControlsPrototype = AFRAME.components['hand-tracking-grab-controls'].Component.prototype;
-
-const grabControlsInit = grabControlsPrototype.init;
-grabControlsPrototype.init = function(){
-    grabControlsInit.call(this);
-
-    this._detectPalmGrab = PalmGrabFunctions._detectPalmGrab.bind(this);
-    this._getTipDistanceFromMetacarpal = PalmGrabFunctions._getTipDistanceFromMetacarpal.bind(this);
-    this.onPalmGrabStarted = PalmGrabFunctions.onPalmGrabStarted.bind(this);
-    this.onPalmGrabEnded = PalmGrabFunctions.onPalmGrabEnded.bind(this);
-    this._alignCollidedElWithHand = PalmGrabFunctions._alignCollidedElWithHand.bind(this);
-    PalmGrabFunctions.init.call(this);
-};
-
-grabControlsPrototype.tick = function() {
-    // PalmGrabFunctions.tick.call(this);
-};
-
-const superOnPinchStarted = grabControlsPrototype.onPinchStarted;
-grabControlsPrototype.onPinchStarted = function(evt) {
-    superOnPinchStarted.call(this, evt);
 };
