@@ -2,10 +2,9 @@
 import * as THREE from 'three';
 
 // const THREE = AFRAME.THREE;
-const MAX_READINGS = 10;
-const READING_DELAY_MS = 100;
-const MINIMUM_STABLE_DISTANCE = 0.01; // How far two points can be from each other to be considered stable
-const LENIENCE = 1; // If the average distance from previous point is less than MINIMUM_STABLE_DISTANCE * LENIENCE, point is accepted
+const MAX_READINGS = 20;
+const READING_DELAY_MS = 80;
+const MAX_ACCEPTABLE_RANGE = 0.008;
 const UNSTABLE_COLOR = new THREE.Color(0xff0000);
 const STABLE_COLOR = new THREE.Color(0x00ffff);
 const axes = ['x', 'y', 'z'];
@@ -136,7 +135,7 @@ AFRAME.registerComponent('calibrate-grip', {
         }
 
         // If sufficient readings and range is close enough
-        if (this.readings.length >= MAX_READINGS && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
+        if (this.readings.length >= MAX_READINGS && this.readingRange < MAX_ACCEPTABLE_RANGE) {
             this._finalizePoint();
             this.stopRecording();
         }
@@ -215,7 +214,7 @@ AFRAME.registerComponent('calibrate-grip', {
     },
     
     _getDistanceAsColor(distance: number) {
-        const alpha = Math.min(distance / MINIMUM_STABLE_DISTANCE, 1);
+        const alpha = Math.min(distance / MAX_ACCEPTABLE_RANGE, 1);
         return new THREE.Color().lerpColors(STABLE_COLOR, UNSTABLE_COLOR, alpha);
     },
 
@@ -264,7 +263,7 @@ AFRAME.registerComponent('calibrate-grip', {
         // (finger placement won't be pixel-perfect)
         const correctedUp = new THREE.Vector3().crossVectors(normal, right).normalize();
 
-        // Resolve normal direction using viewer, same as before
+        // Resolve normal direction using viewer
         const center = bottomLeft.clone().add(topRight).multiplyScalar(0.5);
         if (this.camera) {
             const towardViewer = this.camera.position.clone().sub(center);
