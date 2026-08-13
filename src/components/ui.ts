@@ -31,10 +31,13 @@ AFRAME.registerComponent('ui-root', {
         optionsPanel.add(calibrationContainer);
 
         const bottomLeftBtn = btn('Bottom left', calibrationContainer, (event) => {
-            this.calibrateGrip.startRecording('Bottom left', event.pointerState.hand);
+            this.calibrateGrip.startRecording('bottomLeft', event.pointerState.hand);
         });
         const topRightBtn = btn('Top right', calibrationContainer, (event) => {
-            this.calibrateGrip.startRecording('Top right', event.pointerState.hand);
+            this.calibrateGrip.startRecording('topRight', event.pointerState.hand);
+        });
+        const topLeftBtn = btn('Top left', calibrationContainer, (event) => {
+            this.calibrateGrip.startRecording('topLeft', event.pointerState.hand);
         });
     },
 

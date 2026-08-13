@@ -26,17 +26,21 @@ class GripPoint {
     private handRelativePositions: Map<string, THREE.Vector3>;
     private visualise: boolean = true;
     private visualisationMarker: HTMLElement;
-    private readonly lastComputedAveragePoint: THREE.Vector3;
+    private readonly lastAveragePoint: THREE.Vector3;
     private readonly jointWorldPosition: THREE.Vector3;
     private readonly jointWorldQuaternion: THREE.Quaternion;
     private readonly bonePositionCache: THREE.Vector3;
 
     constructor() {
         this.handRelativePositions = new Map();
-        this.lastComputedAveragePoint = new THREE.Vector3();
+        this.lastAveragePoint = new THREE.Vector3();
         this.bonePositionCache = new THREE.Vector3();
         this.jointWorldPosition = new THREE.Vector3();
         this.jointWorldQuaternion = new THREE.Quaternion();
+    }
+    
+    getLastAveragePoint(): THREE.Vector3 {
+        return this.lastAveragePoint;
     }
     
     addRelativePosition(relativePosition: THREE.Vector3, jointName: string): void {
@@ -44,7 +48,7 @@ class GripPoint {
     }
 
     getAveragePointInWorld(handTrackingComponent: AFRAME.Component) {
-        const worldPositionSum = this.lastComputedAveragePoint.set(0, 0, 0);
+        const worldPositionSum = this.lastAveragePoint.set(0, 0, 0);
         this.handRelativePositions.forEach((localOffset, jointName) => {
             const bone = handTrackingComponent.bones.find(bone => bone.name === jointName);
             bone.getWorldPosition(this.jointWorldPosition);
@@ -60,12 +64,11 @@ class GripPoint {
         });
         worldPositionSum.divideScalar(this.handRelativePositions.size);
     }
-
     
     updateVisualisation(markerParent: HTMLElement): void {
-        const { lastComputedAveragePoint } = this;
+        const { lastAveragePoint } = this;
         if (!this.visualisationMarker) {
-            this.visualisationMarker = createMarker(lastComputedAveragePoint, '#00ff00');
+            this.visualisationMarker = createMarker(lastAveragePoint, '#00ff00');
             markerParent.appendChild(this.visualisationMarker);
         }
         
@@ -74,7 +77,7 @@ class GripPoint {
             return;
         }
 
-        this.visualisationMarker.object3D.position.copy(this.lastComputedAveragePoint);
+        this.visualisationMarker.object3D.position.copy(this.lastAveragePoint);
     }
 }
 
@@ -106,6 +109,10 @@ AFRAME.registerComponent('calibrate-grip', {
         this.calibratingHandTrackingComp = null;
         this.grippingHandTrackingComp = null;
         
+        this.browserDeviceObject3D = document.querySelector('#browser-device').object3D;
+        const sceneEl = document.querySelector('a-scene');
+        this.camera = sceneEl.camera;
+
         // Cached instances
         this.newPosition = new THREE.Vector3();
     },
@@ -115,6 +122,7 @@ AFRAME.registerComponent('calibrate-grip', {
             const gripPoint: GripPoint = this.gripPoints[pointName];
             gripPoint.getAveragePointInWorld(this.grippingHandTrackingComp);
             gripPoint.updateVisualisation(this.el);
+            this._placePhoneIfSufficientPoints();
         }
         
         if (!this.currentlyRecording) return;
@@ -125,7 +133,7 @@ AFRAME.registerComponent('calibrate-grip', {
 
         // If sufficient readings and range is close enough
         if (this.readings.length >= MAX_READINGS && this.readingRange < MINIMUM_STABLE_DISTANCE * LENIENCE) {
-            this.finalizePoint();
+            this._finalizePoint();
             this.stopRecording();
         }
     },
@@ -149,17 +157,16 @@ AFRAME.registerComponent('calibrate-grip', {
         this.resetReadings();
     },
     
-    finalizePoint() {
+    _finalizePoint() {
         const gripPoint = new GripPoint();
         const worldPos = this.readingAverage.clone();
-        for (const jointName of ['thumb-metacarpal', 'index-finger-phalanx-proximal', 
-            'middle-finger-phalanx-proximal', 'ring-finger-phalanx-proximal', 'pinky-finger-phalanx-proximal']) {
-            gripPoint.addRelativePosition(this.getRelativePositionToJoint(worldPos, jointName), jointName);
+        for (const jointName of ['thumb-metacarpal', 'index-finger-tip']) {
+            gripPoint.addRelativePosition(this._getRelativePositionToJoint(worldPos, jointName), jointName);
         }
         this.gripPoints[this.currentPointName] = gripPoint;
     },
     
-    getRelativePositionToJoint(worldPosition: THREE.Vector3, jointName: string): THREE.Vector3 {
+    _getRelativePositionToJoint(worldPosition: THREE.Vector3, jointName: string): THREE.Vector3 {
         const joint = this.grippingHandTrackingComp.bones.find(bone => bone.name === jointName);
 
         const jointWorldPosition = new THREE.Vector3();
@@ -231,5 +238,39 @@ AFRAME.registerComponent('calibrate-grip', {
             readingAverage.add(reading.getAttribute('position'));
         });
         return readingAverage.divideScalar(readings.length);
+    },
+
+    _placePhoneIfSufficientPoints() {
+        const gripPointsCount = Object.keys(this.gripPoints).length;
+        if (gripPointsCount < 3) return;
+
+        const bottomLeft = this.gripPoints.bottomLeft.getLastAveragePoint();
+        const topRight = this.gripPoints.topRight.getLastAveragePoint();
+        const topLeft = this.gripPoints.topLeft.getLastAveragePoint();
+
+        // Real, measured edges — these rotate exactly with the hand, no assumptions
+        const up = topLeft.clone().sub(bottomLeft).normalize();
+        const right = topRight.clone().sub(topLeft).normalize();
+
+        let normal = new THREE.Vector3().crossVectors(right, up).normalize();
+
+        // Re-orthogonalize 'up' in case the three points aren't a perfect right angle
+        // (finger placement won't be pixel-perfect)
+        const correctedUp = new THREE.Vector3().crossVectors(normal, right).normalize();
+
+        // Resolve normal direction using viewer, same as before
+        const center = bottomLeft.clone().add(topRight).multiplyScalar(0.5);
+        if (this.camera) {
+            const towardViewer = this.camera.position.clone().sub(center);
+            if (normal.dot(towardViewer) < 0) {
+                normal.negate();
+                right.negate(); // keep the basis right-handed and consistent when flipping
+            }
+        }
+
+        // Build the orientation directly from measured axes — no lookAt, no roll ambiguity
+        const basis = new THREE.Matrix4().makeBasis(right, correctedUp, normal);
+        this.browserDeviceObject3D.quaternion.setFromRotationMatrix(basis);
+        this.browserDeviceObject3D.position.copy(center);
     },
 });
