@@ -19,9 +19,10 @@ export function btn(text, container: Container, cb: Function = undefined, btnOve
     return btn;
 }
 
-export function rootPanel(element: HTMLElement, panelOverrides: object = {}) {
+export function rootPanel(element: HTMLElement, panelOverrides: object = {}, rootOverrides: object = {}) {
     const root = new Container({
         pixelSize: 0.005,
+        ...rootOverrides,
     });
     element.setObject3D('mesh', root);
 

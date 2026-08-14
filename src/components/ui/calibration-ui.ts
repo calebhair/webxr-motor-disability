@@ -2,18 +2,37 @@
 import { Container, reversePainterSortStable } from '@pmndrs/uikit';
 import {rootPanel, btn} from './helpers.ts';
 
+const THREE = AFRAME.THREE;
+
+const LEFT_HAND_ID = 'leftHand';
+const RIGHT_HAND_ID = 'rightHand';
+
+const HAND_OFFSET = new THREE.Vector3(0, -0.15, 0);
+
 AFRAME.registerComponent('calibration-ui', {
-    calibrating: true,
+    calibrating: false,
+    _vec3Cache: new THREE.Vector3(),
 
     init: function () {
         const calibrateGripEl = document.querySelector('[calibrate-grip]');
         if (!calibrateGripEl) throw new Error('calibrate-grip is missing');
         this.calibrateGrip = calibrateGripEl.components['calibrate-grip'];
 
-        // Automatically handles layers of UI
+        this.cameraObject3D = this.el.sceneEl.camera;
+        console.warn(this.cameraObject3D);
+        
+        this.handTracking = {
+            [LEFT_HAND_ID]: document.getElementById(LEFT_HAND_ID).components['hand-tracking-controls'],
+            [RIGHT_HAND_ID]: document.getElementById(RIGHT_HAND_ID).components['hand-tracking-controls'],
+        };
+
+        this.setupUI();
+    },
+    
+    setupUI() {
         this.el.sceneEl.renderer.setTransparentSort(reversePainterSortStable);
 
-        const { root, panel } = rootPanel(this.el);
+        const { root, panel } = rootPanel(this.el, {}, { pixelSize: 0.002 });
         this.root = root;
         this.panel = panel;
 
@@ -22,25 +41,45 @@ AFRAME.registerComponent('calibration-ui', {
         const bottomRow = new Container({ flexDirection: 'row' });
         this.panel.add(bottomRow);
 
-        const topLeftBtn = btn('Top left', topRow, (event) => {
-            this.calibrateGrip.startRecording('topLeft', event.pointerState.hand);
+        btn('Top left', topRow, () => {
+            this.calibrateGrip.startRecording('topLeft', this.calibratingHandID);
         });
-        const topRightBtn = btn('Top right', topRow, (event) => {
-            this.calibrateGrip.startRecording('topRight', event.pointerState.hand);
+        btn('Top right', topRow, () => {
+            this.calibrateGrip.startRecording('topRight', this.calibratingHandID);
         });
-        const bottomLeftBtn = btn('Bottom left', bottomRow, (event) => {
-            this.calibrateGrip.startRecording('bottomLeft', event.pointerState.hand);
+        btn('Bottom left', bottomRow, () => {
+            this.calibrateGrip.startRecording('bottomLeft', this.calibratingHandID);
         });
 
         btn('Cancel', panel, (event) => {
-            console.warn('Cancel pressed');
+            this.calibrateGrip.stopRecording();
         }, {variant: 'tertiary'});
+    },
+
+    startCalibratingForHand(grabbingHandID: typeof LEFT_HAND_ID | typeof RIGHT_HAND_ID) {
+        this.grabbingHandID = grabbingHandID;
+
+        if (grabbingHandID === LEFT_HAND_ID) this.calibratingHandID = RIGHT_HAND_ID;
+        else if (grabbingHandID === RIGHT_HAND_ID) this.calibratingHandID = LEFT_HAND_ID;
+        else throw new Error('Unknown grabbing hand ID');
+
+        this.calibrating = true;
     },
 
     tick: function (time, timeDelta) {
         if (!this.calibrating) return;
-
         this.root.update(timeDelta);
-        // this.el.object3D.position.set();
+
+        const uiObject3D: AFRAME.THREE.Object3D = this.el.object3D;
+        // Move UI under the grabbing hand
+        uiObject3D.position.copy(this.getHandCentrePos())
+            .add(HAND_OFFSET);
+        // Point towards camera
+        uiObject3D.lookAt(this.el.sceneEl.camera.getWorldPosition(this._vec3Cache));
+    },
+
+    getHandCentrePos() {
+        const centrePos = this.handTracking[this.grabbingHandID].bones.find(bone => bone.name === 'middle-finger-metacarpal').position;
+        return this._vec3Cache.copy(centrePos);
     },
 });
