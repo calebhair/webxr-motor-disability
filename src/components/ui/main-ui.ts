@@ -52,6 +52,9 @@ AFRAME.registerComponent('main-ui', {
         btn('Right hand', calibrationButtonContainer, () => {
             this.calibrationUI.startCalibratingForHand('rightHand');
         });
+        btn('Reset', calibrationContainer, () => {
+            this.calibrationUI.resetCalibration();
+        }, {variant: 'negative', alignSelf: 'center'});
     },
 
     tick: function (time, timeDelta) {

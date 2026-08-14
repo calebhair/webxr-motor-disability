@@ -2,7 +2,7 @@
 import AFRAME from 'aframe';
 import {CombinedPointer, createTouchPointer} from '@pmndrs/pointer-events';
 
-const options = { hoverRadius: 0.1, downRadius: 0.03 };
+const options = { hoverRadius: 0.05, downRadius: 0.01 };
 
 AFRAME.registerComponent('hand-touch-pointers', {
     init: function () {

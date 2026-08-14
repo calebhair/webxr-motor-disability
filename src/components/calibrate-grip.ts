@@ -102,6 +102,13 @@ AFRAME.registerComponent('calibrate-grip', {
         this.nextReadingTime = 0;
     },
     
+    resetGripPoints() {
+        for (const [name, gripPoint] of Object.entries(this.gripPoints)) {
+            gripPoint.deleteVisualisation();
+        }
+        this.gripPoints = {};
+    },
+    
     play: function () {
         if (this.initialised) return;
         this.initialised = true;

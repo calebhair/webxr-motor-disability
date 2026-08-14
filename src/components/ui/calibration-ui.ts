@@ -50,9 +50,8 @@ AFRAME.registerComponent('calibration-ui', {
         btn('Bottom left', bottomRow, () => {
             this.calibrateGrip.startRecording('bottomLeft', this.calibratingHandID);
         });
-
-        btn('Cancel', panel, (event) => {
-            this.calibrateGrip.stopRecording();
+        btn('Hide', panel, () => {
+            this.cancelCalibration();
         }, {variant: 'tertiary'});
     },
 
@@ -64,6 +63,19 @@ AFRAME.registerComponent('calibration-ui', {
         else throw new Error('Unknown grabbing hand ID');
 
         this.calibrating = true;
+        this.root.visible = true;
+    },
+    
+    cancelCalibration() {
+        this.calibrateGrip.stopRecording();
+        this.calibrating = false;
+        this.root.visible = false;
+    },
+
+    resetCalibration() {
+        this.cancelCalibration();
+        this.calibrateGrip.resetReadings();
+        this.calibrateGrip.resetGripPoints();
     },
 
     tick: function (time, timeDelta) {
