@@ -18,9 +18,6 @@ AFRAME.registerComponent('calibration-ui', {
         if (!calibrateGripEl) throw new Error('calibrate-grip is missing');
         this.calibrateGrip = calibrateGripEl.components['calibrate-grip'];
 
-        this.cameraObject3D = this.el.sceneEl.camera;
-        console.warn(this.cameraObject3D);
-        
         this.handTracking = {
             [LEFT_HAND_ID]: document.getElementById(LEFT_HAND_ID).components['hand-tracking-controls'],
             [RIGHT_HAND_ID]: document.getElementById(RIGHT_HAND_ID).components['hand-tracking-controls'],

@@ -181,6 +181,20 @@ class StreamedBrowser {
       `,
         });
     }
+    
+    async pageForward() {
+        const { signal } = this.abortController;
+        const { page } = this;
+        if (!page || page.isClosed()) return;
+        await page.goForward({ signal });
+    }
+    
+    async pageBack() {
+        const { signal } = this.abortController;
+        const { page } = this;
+        if (!page || page.isClosed()) return;
+        await page.goBack({ signal });
+    }
 }
 
 export default StreamedBrowser;

@@ -11,10 +11,15 @@ export function btn(text, container: Container, cb: Function = undefined, btnOve
 
     const btnLabel = new ButtonLabel({ margin: 0, padding: 0, minWidth: 0, minHeight: 0 });
     btn.add(btnLabel);
-    const btnText = new Text({ text, fontSize: 4 });
+    const btnText = new Text({ text, fontSize: 4, ...btnOverrides });
     btnLabel.add(btnText);
 
-    if (cb) btn.addEventListener('pointerdown', cb);
+    if (cb) btn.addEventListener('pointerdown', event => {
+        cb(event);
+        btn.setProperties({ disabled: true });
+        setTimeout(() => btn.setProperties({ disabled: false }),
+            500);
+    });
 
     return btn;
 }

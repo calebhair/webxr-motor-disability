@@ -43,6 +43,12 @@ async function setupBrowserForSocket(socket: Socket, onBrowserFrame: Function) {
     socket.on('dispatchTouchEvent', async eventData => {
         await sb.dispatchTouchEvent(eventData);
     });
+    socket.on('streamed-browser-forward', async () => {
+        await sb.pageForward();
+    });
+    socket.on('streamed-browser-back', async () => {
+        await sb.pageBack();
+    });
 
     await sb.streamUrl(socket.handshake.query);
 }
