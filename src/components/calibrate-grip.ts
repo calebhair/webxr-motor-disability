@@ -119,7 +119,6 @@ AFRAME.registerComponent('calibrate-grip', {
         this.calibratingHandTrackingComp = null;
         this.grippingHandTrackingComp = null;
         
-        this.browserDeviceObject3D = document.querySelector('#browser-device').object3D;
         const sceneEl = document.querySelector('a-scene');
         this.camera = sceneEl.camera;
 
@@ -282,7 +281,9 @@ AFRAME.registerComponent('calibrate-grip', {
 
         // Build the orientation directly from measured axes — no lookAt, no roll ambiguity
         const basis = new THREE.Matrix4().makeBasis(right, correctedUp, normal);
-        this.browserDeviceObject3D.quaternion.setFromRotationMatrix(basis);
-        this.browserDeviceObject3D.position.copy(center);
+
+        const browserDeviceObject3D = document.querySelector('#browser-device').object3D;
+        browserDeviceObject3D.quaternion.setFromRotationMatrix(basis);
+        browserDeviceObject3D.position.copy(center);
     },
 });
