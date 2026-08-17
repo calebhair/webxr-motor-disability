@@ -20,6 +20,7 @@
     <script src="src/components/hand-touch-pointers.ts" type="module"></script>
     <script src="src/components/ui/main-ui.ts" type="module"></script>
     <script src="src/components/ui/calibration-ui.ts" type="module"></script>
+    <script src="src/xr-entry.ts" type="module"></script>
   </head>
   <body>
     <canvas id="streamed-browser-canvas"></canvas>
@@ -41,5 +42,12 @@
       <a-entity main-ui position="-0.3 1 -0.4" rotation="0 45 0"></a-entity>
     </a-scene>
 
+    <!-- Flat UI landing page/config -->
+    <div id="ui-overlay">
+      <label for="url-input">URL:</label>
+      <input id="url-input" type="text">
+      
+      <button id="enter-vr-btn">Enter VR</button>
+    </div>
   </body>
 </html>
