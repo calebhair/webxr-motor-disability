@@ -1,4 +1,5 @@
 ﻿function enterVR () {
+    // TODO use different event; can enter via address button too
     document.dispatchEvent(new CustomEvent('enterVR'));
     
     const scene = document.querySelector('a-scene');

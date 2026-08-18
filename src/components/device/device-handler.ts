@@ -1,4 +1,5 @@
 ﻿import AFRAME from 'aframe';
+import {ELEMENT_IDS} from '../../constants.ts';
 
 const THREE = AFRAME.THREE;
 
@@ -14,11 +15,11 @@ AFRAME.registerSystem('device-handler', {
     
     createPhoneEntity(deviceData) {
         const device = document.createElement('a-entity');
-        device.id = 'browser-device';
+        device.id = ELEMENT_IDS.BROWSER_DEVICE;
         device.object3D.position.copy(DEFAULT_POSITION);
         
         const touchscreenEl = document.createElement('a-entity');
-        touchscreenEl.id = 'screen';
+        touchscreenEl.id = ELEMENT_IDS.SCREEN;
         touchscreenEl.setAttribute('screen', deviceData);
         touchscreenEl.setAttribute('touchable-plane', '');
         device.appendChild(touchscreenEl);

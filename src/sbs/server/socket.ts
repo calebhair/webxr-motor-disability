@@ -3,50 +3,53 @@ import * as fs from 'node:fs';
 import { Server, Socket } from 'socket.io';
 
 import StreamedBrowser from './streamed-browser.ts';
+import {CERT_PATH, CLIENT_HOST, CUSTOM_EVENTS, KEY_PATH} from '../../constants.ts';
 
 export function setupSocketStreamedBrowser() {
     // Create HTTPS server to allow immersive VR/AR
     const server = createServer({
-        cert: fs.readFileSync('./localhost+1.pem'),
-        key: fs.readFileSync('./localhost+1-key.pem'),
+        cert: fs.readFileSync(CERT_PATH),
+        key: fs.readFileSync(KEY_PATH),
     });
 
+    // Restrict CORS to client host, otherwise any website loaded can control browsers
     const io = new Server(server, {
-        cors: { origin: '*' }, // Allow cross-origin, as arbitrary IP addresses on the LAN may connect to this
+        cors: { origin: CLIENT_HOST },
     });
-    io.on('connection', onSocketConnect);
 
-    async function onSocketConnect(socket: Socket) {
+    io.on('connection', async (socket: Socket) => {
         console.log('Connected', socket.id);
+
+        // Use socket ID as room, otherwise will stream data to all connections;
+        // this way, each separate connection streams its browser to only that connection.
         socket.join(socket.id);
+
         socket.on('disconnect', async () => {
             console.log(`Disconnected ${socket.id}`);
-            await socket.data.streamedBrowser.stopStream();
+            await socket.data.streamedBrowser?.stopStream();
         });
         
-        await setupBrowserForSocket(socket, (data, sessionId) => {
+        await setupBrowserForSocket(socket, (data) => {
             const buf = Buffer.from(data, 'base64');
-            // Use socket ID as room, otherwise will stream data to all connections;
-            // this way, each separate connection streams its browser to only that connection.
             io.to(socket.id).volatile.emit('frame', buf);
         });
-    }
+    });
 
     return { server, io };
 }
 
 async function setupBrowserForSocket(socket: Socket, onBrowserFrame: Function) {
     const sb = socket.data.streamedBrowser = new StreamedBrowser(onBrowserFrame);
-    socket.on('click', async eventData => {
+    socket.on(CUSTOM_EVENTS.BROWSER_CLICK, async eventData => {
         await sb.click(eventData);
     });
-    socket.on('dispatchTouchEvent', async eventData => {
+    socket.on(CUSTOM_EVENTS.BROWSER_DISPATCH_TOUCH_EVENT, async eventData => {
         await sb.dispatchTouchEvent(eventData);
     });
-    socket.on('streamed-browser-forward', async () => {
+    socket.on(CUSTOM_EVENTS.BROWSER_FORWARD, async () => {
         await sb.pageForward();
     });
-    socket.on('streamed-browser-back', async () => {
+    socket.on(CUSTOM_EVENTS.BROWSER_BACK, async () => {
         await sb.pageBack();
     });
 

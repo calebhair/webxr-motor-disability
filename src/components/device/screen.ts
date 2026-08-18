@@ -1,5 +1,6 @@
 ﻿import AFRAME from 'aframe';
 import {setupSocket} from '../../sbs/client.ts';
+import {ELEMENT_IDS, SBS_HOST} from '../../constants.ts';
 
 const THREE = AFRAME.THREE;
 
@@ -7,7 +8,7 @@ const mm = (millimetres: number) => millimetres / 1000;
 
 AFRAME.registerComponent('screen', {
     schema: {
-        streamedBrowserServerUrl: {type: 'string', default: 'https://143.117.93.180:3000'},
+        streamedBrowserServerUrl: {type: 'string', default: SBS_HOST},
         targetUrl: {type: 'string', default: 'https://testpages.eviltester.com/pages/forms/text-inputs/'},
 
         canvasResolutionX: {type: 'number', default: 430},
@@ -29,7 +30,7 @@ AFRAME.registerComponent('screen', {
         const { data } = this;
         
         const canvas = this.canvas = document.createElement('canvas');
-        canvas.id = 'streamed-browser-canvas';
+        canvas.id = ELEMENT_IDS.STREAMED_BROWSER_CANVAS;
         document.body.appendChild(canvas);
 
         // Configure canvas
@@ -65,7 +66,7 @@ AFRAME.registerComponent('screen', {
         this.parentGeometry = new THREE.BoxGeometry(data.physicalWidth, data.physicalHeight, data.physicalDepth);
         this.parentMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
         this.parentMesh = new THREE.Mesh(this.parentGeometry, this.parentMaterial);
-        document.getElementById('browser-device').setObject3D('mesh', this.parentMesh);
+        document.getElementById(ELEMENT_IDS.BROWSER_DEVICE).setObject3D('mesh', this.parentMesh);
     },
 
     tick() {

@@ -1,5 +1,6 @@
 ﻿declare const AirDatepicker;
 declare const SimpleKeyboard;
+declare const Pickr;
 type SimpleKeyboard = typeof SimpleKeyboard;
 
 // onPageLoad is run as a browser script.
