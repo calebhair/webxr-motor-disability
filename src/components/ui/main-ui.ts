@@ -1,6 +1,6 @@
 ﻿import AFRAME from 'aframe';
 import {type BaseOutProperties, Container, type InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
-import {theme} from '@pmndrs/uikit-horizon';
+import {Checkbox, theme} from '@pmndrs/uikit-horizon';
 import {rootPanel, btn} from './helpers.ts';
 
 
@@ -16,7 +16,7 @@ const defaultContainerConfig: InProperties<BaseOutProperties> = {
 };
 
 AFRAME.registerComponent('main-ui', {
-    init: function () {
+    init() {
         const calibrationUI = document.querySelector('[calibration-ui]');
         if (!calibrationUI) throw new Error('calibration-ui is missing');
         this.calibrationUI = calibrationUI.components['calibration-ui'];
@@ -29,6 +29,7 @@ AFRAME.registerComponent('main-ui', {
         this.panel = panel;
 
         this.setupCalibrationSection(this.panel);
+        this.setupTremor(this.panel);
         this.setupBrowserSection(this.panel);
     },
     
@@ -60,6 +61,21 @@ AFRAME.registerComponent('main-ui', {
         }, {variant: 'negative', alignSelf: 'center'});
     },
 
+    setupTremor(parent) {
+        const container = new Container(defaultContainerConfig);
+        parent.add(container);
+
+        const header = new Text({ text: 'Tremor', fontSize: 7, color: horizonThemes.primary });
+        container.add(header);
+        
+        const enableContainer = new Container({ flexDirection: 'row' });
+        container.add(enableContainer);
+        const enableCheckbox = new Checkbox();
+        enableContainer.add(enableCheckbox);
+        const enableLabel = new Text({ text: 'Enabled', fontSize: 4, color: horizonThemes.primary });
+        enableContainer.add(enableLabel);
+    },
+    
     setupBrowserSection(parent) {
         const container = new Container(defaultContainerConfig);
         parent.add(container);

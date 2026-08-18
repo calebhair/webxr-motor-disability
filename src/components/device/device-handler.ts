@@ -17,6 +17,7 @@ AFRAME.registerSystem('device-handler', {
         const device = document.createElement('a-entity');
         device.id = ELEMENT_IDS.BROWSER_DEVICE;
         device.object3D.position.copy(DEFAULT_POSITION);
+        device.setAttribute('grabbable', '');
         
         const touchscreenEl = document.createElement('a-entity');
         touchscreenEl.id = ELEMENT_IDS.SCREEN;
