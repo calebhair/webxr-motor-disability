@@ -4,7 +4,7 @@ import {CombinedPointer, createTouchPointer} from '@pmndrs/pointer-events';
 
 const options = { hoverRadius: 0.05, downRadius: 0.01 };
 
-AFRAME.registerComponent('hand-touch-pointers', {
+AFRAME.registerSystem('touch-pointers', {
     init: function () {
         const { sceneEl } = this.el;
         const getCamera = () => sceneEl.camera;
@@ -21,14 +21,19 @@ AFRAME.registerComponent('hand-touch-pointers', {
         this.combined.register(this.leftPointer);
         this.combined.register(this.rightPointer);
 
-        const leftHandEl = document.querySelector('#leftHand');
-        const rightHandEl = document.querySelector('#rightHand');
-        if (!leftHandEl || !rightHandEl) throw 'Could not find hands.';
-        this.leftHandTracking = leftHandEl.components['hand-tracking-controls'];
-        this.rightHandTracking = rightHandEl.components['hand-tracking-controls'];
+        this.leftHandEl = document.querySelector('#leftHand');
+        this.rightHandEl = document.querySelector('#rightHand');
+        if (!this.leftHandEl || !this.rightHandEl) throw 'Could not find hands.';
+        console.log('Touch pointers setup');
     },
 
     tick: function () {
+        if (!this.leftHandTracking || !this.rightHandTracking) {
+            this.leftHandTracking = this.leftHandEl.components['hand-tracking-controls'];
+            this.rightHandTracking = this.rightHandEl.components['hand-tracking-controls'];
+            return;
+        }
+
         // resolve fingertip bones lazily, once hand-tracking-controls has loaded them
         if (!this.leftSpace.current) this.leftSpace.current = this._getFingertip(this.leftHandTracking);
         if (!this.rightSpace.current) this.rightSpace.current = this._getFingertip(this.rightHandTracking);

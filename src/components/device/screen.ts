@@ -32,7 +32,7 @@ AFRAME.registerComponent('screen', {
         canvas.id = 'streamed-browser-canvas';
         document.body.appendChild(canvas);
 
-        // Update canvas
+        // Configure canvas
         canvas.style.width = data.canvasWidth;
         canvas.style.height = data.canvasHeight;
         canvas.width = parseInt(data.canvasResolutionX);
@@ -49,7 +49,7 @@ AFRAME.registerComponent('screen', {
         };
         setupSocket(data.streamedBrowserServerUrl, browserParams, canvas);
 
-        // Update geometry
+        // Configure geometry
         this.geometry = new THREE.PlaneGeometry(data.physicalWidth, data.physicalHeight);
         this.texture = new THREE.CanvasTexture(canvas);
         this.texture.colorSpace = THREE.SRGBColorSpace;
@@ -58,10 +58,10 @@ AFRAME.registerComponent('screen', {
         this.el.setObject3D('mesh', this.mesh);
         this.el.object3D.position.set(0, 0, data.physicalDepth/2 + 0.001); // Slight offset for z-fighting
 
-        // Update touchable area
+        // Configure touchable area
         this.el.setAttribute('touchable-plane', { width: data.physicalWidth, height: data.physicalHeight });
 
-        // Update parent geometry TODO move responsibility
+        // Configure parent geometry TODO move responsibility
         this.parentGeometry = new THREE.BoxGeometry(data.physicalWidth, data.physicalHeight, data.physicalDepth);
         this.parentMaterial = new THREE.MeshBasicMaterial( { color: 0x000000 } );
         this.parentMesh = new THREE.Mesh(this.parentGeometry, this.parentMaterial);
