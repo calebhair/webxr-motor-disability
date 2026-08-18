@@ -6,6 +6,9 @@
     <meta name="description" content="XR Motor Disabilities">
 
     <link rel="stylesheet" href="src/styles.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+    </style>
     
     <script type="module">
       import 'aframe';
@@ -41,10 +44,26 @@
 
     <!-- Flat UI landing page/config -->
     <div id="ui-overlay">
-      <label for="url-input">URL:</label>
-      <input id="url-input" type="text">
-      
-      <button id="enter-vr-btn">Enter VR</button>
+      <h1 id="title">WebXR Tremor Simulation</h1>
+
+      <form>
+        <label for="url-input">URL</label>
+        <input id="url-input" type="text" placeholder="https://" value="https://">
+
+        <label>Test</label>
+        <div>
+          <label>X</label>
+          <input type="text" placeholder="https://" value="https://">
+          <label>Y</label>
+          <input type="text" placeholder="https://" value="https://">
+        </div>
+      </form>
+
+      <div>
+        <button id="enter-vr-btn" >Enter VR</button>
+        <button id="enter-ar-btn" >Enter AR</button>
+      </div>
     </div>
+
   </body>
 </html>
