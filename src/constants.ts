@@ -9,7 +9,7 @@ export const KEY_PATH = './localhost+1-key.pem';
 
 export const CUSTOM_EVENTS = Object.freeze({
     CONFIGURE_TREMOR: 'configureTremor',
-    VR_ENTERED: 'vrEntered',
+    XR_ENTERED: 'xrEntered',
     
     BROWSER_CLICK: 'browserClick',
     BROWSER_DISPATCH_TOUCH_EVENT: 'browserDispatchTouchEvent',
@@ -21,4 +21,5 @@ export const ELEMENT_IDS = Object.freeze({
     BROWSER_DEVICE: 'browser-device',
     SCREEN: 'screen',
     STREAMED_BROWSER_CANVAS: 'streamed-browser-canvas',
+    ENVIRONMENT: 'environment',
 });

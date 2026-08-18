@@ -1,5 +1,5 @@
 ﻿import AFRAME from 'aframe';
-import { Container, reversePainterSortStable, Text } from '@pmndrs/uikit';
+import {type BaseOutProperties, Container, type InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
 import {theme} from '@pmndrs/uikit-horizon';
 import {rootPanel, btn} from './helpers.ts';
 
@@ -7,6 +7,12 @@ import {rootPanel, btn} from './helpers.ts';
 const horizonThemes = {
     primary: theme.component.button.primary.background.fill.default.value,
     subtext: theme.component.button.primary.background.fill.hovered.value,
+};
+
+const defaultContainerConfig: InProperties<BaseOutProperties> = {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    maxWidth: 70,
 };
 
 AFRAME.registerComponent('main-ui', {
@@ -27,11 +33,7 @@ AFRAME.registerComponent('main-ui', {
     },
     
     setupCalibrationSection(parent) {
-        const calibrationContainer = new Container({
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            maxWidth: 70,
-        });
+        const calibrationContainer = new Container(defaultContainerConfig);
         parent.add(calibrationContainer);
 
         const calibrationHeading = new Text({ text: 'Calibration', fontSize: 7, color: horizonThemes.primary });
@@ -59,11 +61,7 @@ AFRAME.registerComponent('main-ui', {
     },
 
     setupBrowserSection(parent) {
-        const container = new Container({
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            maxWidth: 70,
-        });
+        const container = new Container(defaultContainerConfig);
         parent.add(container);
 
         const header = new Text({ text: 'Browser', fontSize: 7, color: horizonThemes.primary });
@@ -85,7 +83,7 @@ AFRAME.registerComponent('main-ui', {
         }, navStyle);
     },
     
-    tick: function (time, timeDelta) {
+    tick(time, timeDelta) {
         this.root.update(timeDelta);
     },
 });
