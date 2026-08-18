@@ -26,6 +26,7 @@
     "@types/node": "^26.1.1",
     "@types/three": "^0.185.4",
     "@types/ws": "^8.18.1",
+    "concurrently": "^10.0.5",
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.11.0",
@@ -36,6 +37,7 @@
   "type": "module",
   "scripts": {
     "serve-client": "vite --host",
-    "start-sbs": "node src/sbs/server/index.ts"
+    "start-sbs": "node src/sbs/server/index.ts",
+    "start": "concurrently --kill-others \"npm run serve-client\" \"npm run start-sbs\""
   }
 }
