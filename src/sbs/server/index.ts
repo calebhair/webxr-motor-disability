@@ -1,7 +1,8 @@
 import {setupSocketStreamedBrowser} from './socket.ts';
+import {SBS_PORT} from '../../constants.ts';
 
 const { server } = setupSocketStreamedBrowser();
 
-server.listen(3000, () => {
+server.listen(SBS_PORT, () => {
     console.log('server running');
 });

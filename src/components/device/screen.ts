@@ -1,5 +1,5 @@
 ﻿import AFRAME from 'aframe';
-import {setupSocket} from '../../ssb/client.ts';
+import {setupSocket} from '../../sbs/client.ts';
 
 const THREE = AFRAME.THREE;
 
