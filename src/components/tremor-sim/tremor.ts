@@ -3,12 +3,15 @@ import {getChildrenIDsRecursively, HandJointIDs} from './hand-helpers.ts';
 
 const THREE = AFRAME.THREE;
 const { MathUtils } = THREE;
-const degreeInRad = Math.PI / 180;
 
-const amplitudeDegrees = 1;
-const tremorHz = 10;
-
+/**
+ * Encapsulates behavior and state necessary to modify the hand tracking position.
+ * Main function is applyTremor.
+ */
 export class Tremor {
+    private _tremorAmplitudeDegrees: number = 0;
+    private _tremorFrequency: number = 0;
+    
     // Cache matrices to avoid reallocating each frame
     private _jointPose = new THREE.Matrix4();
     private _changeMatrix = new THREE.Matrix4();
@@ -22,29 +25,47 @@ export class Tremor {
     private _worldQuat = new THREE.Quaternion();
     private jointPoses: Float32Array;
 
-    constructor(jointPoses) {
+    /**
+     * @param jointPoses the jointPoses attribute from the hand tracking component that it will override
+     */
+    constructor(jointPoses: Float32Array) {
         this.jointPoses = jointPoses;
     }
+    
+    get tremorFrequency() {
+        return this._tremorFrequency;
+    }
+    
+    set tremorFrequency(value: number) {
+        this._tremorFrequency = value;
+    }
+    
+    get tremorAmplitudeDegrees() {
+        return this._tremorAmplitudeDegrees;
+    }
+    
+    set tremorAmplitudeDegrees(value: number) {
+        this._tremorAmplitudeDegrees = value;
+    }
 
-
+    /**
+     * Applies the tremor to the tracked hand.
+     * @param time global uptime of the scene in milliseconds
+     */
     applyTremor(time: number) {
-        const changeVec = Array.from({ length: 3 }, () => {
-            // time is in ms, divide by 1000 to get seconds, multiply by 2PI to get a full cycle per second.
-            const rhythm = Math.sin(time / 500 * Math.PI * tremorHz);
-            return rhythm * amplitudeDegrees * degreeInRad * MathUtils.randFloat(0.8, 1.1);
-        });
-        this.rotateJoint(HandJointIDs.WRIST, ...changeVec);
+        // time is in ms, divide by 1000 to get seconds, multiply by 2PI to get a full cycle per second.
+        const rhythm = Math.sin(time / 500 * Math.PI * this._tremorFrequency);
+        const baseRotation = MathUtils.degToRad(rhythm * this._tremorAmplitudeDegrees);
+        const randJitter = () => baseRotation * MathUtils.randFloat(0.8, 1.1);
+
+        // Apply base rotation to all axis, randomized
+        this.rotateJoint(HandJointIDs.WRIST, randJitter(), randJitter(), randJitter());
     }
 
-    translateHand(x: number, y: number, z: number){
-        this._changeMatrix.makeTranslation(x, y, z);
-        for (let jointIndex = 0; jointIndex < 25; jointIndex++) {
-            this._loadJointMatrix(jointIndex);
-            this._jointPose.premultiply(this._changeMatrix);
-            this._setJointMatrix(jointIndex);
-        }
-    }
-
+    /**
+     * Rotates a specific joint, including its children
+     * TODO use getBone instead of manipulating matrices directly
+     */
     rotateJoint(targetJointID: HandJointIDs, x: number, y: number, z: number) {
         const pivotMatrix = this._pivotMatrix.fromArray(this.jointPoses, targetJointID * 16);
         const pivotPos = this._pivotPos.setFromMatrixPosition(pivotMatrix);

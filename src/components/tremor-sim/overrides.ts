@@ -1,24 +1,42 @@
 ﻿import AFRAME from 'aframe';
 import {Tremor} from './tremor.ts';
+import {CUSTOM_EVENTS} from '../../constants.ts';
 
 
-// Hand controls override
+// In order to override the hand rendering, override parts of the the hand tracking component directly
 const handControlsPrototype = AFRAME.components['hand-tracking-controls'].Component.prototype;
 
+// Init override
 const handControlsInit = handControlsPrototype.init;
+
 handControlsPrototype.init = function(){
     handControlsInit.call(this);
+
     this.tremor = new Tremor(this.jointPoses);
+    this.tremorEnabled = false;
+    
+    document.addEventListener(CUSTOM_EVENTS.CONFIGURE_TREMOR, (event: CustomEvent) => {
+        const { enabled, amplitudeDegrees, frequency } = event.detail;
+        this.tremorEnabled = !!enabled;
+        this.tremor.tremorFrequency = frequency;
+        this.tremor.tremorAmplitudeDegrees = amplitudeDegrees;
+    });
 };
 
+
+// Tick override
 const handControlsTick = handControlsPrototype.tick;
+
 handControlsPrototype.tick = function(time, timeDelta) {
     handControlsTick.call(this, time, timeDelta);
-    if (!this.hasPoses) return;
 
     // Tremor tick
-    // this.tremor.applyTremor(time);
-    this.updateHandModel();
-    this.detectGesture();
-    this.updateWristObject();
+    if (!this.hasPoses) return;
+    if (this.tremorEnabled) {
+        this.tremor.applyTremor(time);
+        // Re-update
+        this.updateHandModel();
+        this.detectGesture();
+        this.updateWristObject();
+    }
 };
