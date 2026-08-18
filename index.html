@@ -14,7 +14,8 @@
     </script>
 
     <script src="src/ssb/client.ts" type="module"></script>
-    <script src="src/components/phone.ts" type="module"></script>
+    <script src="src/components/device/screen.ts" type="module"></script>
+    <script src="src/components/device/touchable-plane.ts" type="module"></script>
     <script src="src/components/tremor-sim/overrides.ts" type="module"></script>
     <script src="src/components/calibrate-grip.ts" type="module"></script>
     <script src="src/components/hand-touch-pointers.ts" type="module"></script>
@@ -24,8 +25,6 @@
     <script src="src/components/device-handler.ts" type="module"></script>
   </head>
   <body>
-    <canvas id="streamed-browser-canvas"></canvas>
-
     <a-scene hand-touch-pointers log="console: false">
       <a-entity environment="preset: contact; dressingAmount: 10"></a-entity>
       <a-log position="0 1 -0.5" scale="0.1 0.1 0.1" grabbable></a-log>
