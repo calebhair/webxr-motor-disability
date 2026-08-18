@@ -1,5 +1,5 @@
 ﻿import AFRAME from 'aframe';
-import {ELEMENT_IDS} from '../../constants.ts';
+import {CUSTOM_EVENTS, ELEMENT_IDS} from '../../constants.ts';
 
 const THREE = AFRAME.THREE;
 
@@ -7,7 +7,7 @@ const DEFAULT_POSITION = new THREE.Vector3(0, 1.5, -0.5);
 
 AFRAME.registerSystem('device-handler', {
     init() {
-        document.addEventListener('enterVR', (deviceData) => {
+        document.addEventListener(CUSTOM_EVENTS.VR_ENTERED, (deviceData) => {
             const { deviceParentEl } = this.createPhoneEntity(deviceData);
             this.el.sceneEl.appendChild(deviceParentEl);
         });
