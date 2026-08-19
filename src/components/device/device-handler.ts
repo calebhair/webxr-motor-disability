@@ -7,8 +7,8 @@ const DEFAULT_POSITION = new THREE.Vector3(0, 1.5, -0.5);
 
 AFRAME.registerSystem('device-handler', {
     init() {
-        document.addEventListener(CUSTOM_EVENTS.XR_ENTERED, (deviceData) => {
-            const { deviceParentEl } = this.createPhoneEntity(deviceData);
+        document.addEventListener(CUSTOM_EVENTS.XR_ENTERED, (event: CustomEvent) => {
+            const { deviceParentEl } = this.createPhoneEntity(event.detail);
             this.el.sceneEl.appendChild(deviceParentEl);
         });
     },
