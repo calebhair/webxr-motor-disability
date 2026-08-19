@@ -1,0 +1,55 @@
+#streamed-browser-canvas {
+  visibility: hidden;
+  z-index: 99999; /* For ease of debugging; this can be unhidden to see what is being streamed directly. */
+  position: fixed;
+}
+
+/* xr-mode-ui not working; workaround. */
+.a-enter-vr {
+  display: none;
+}
+
+#ui-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(#404040, #282828);
+  color: white;
+  font-family: Quicksand, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#title {
+  font-size: 5rem;
+}
+
+#ui-overlay > form {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem 1rem;
+  align-items: center;
+}
+
+.long-row {
+  display: flex;
+  align-items: center;
+}
+
+input, button {
+  padding: 1.5rem;
+  margin: 0.5rem;
+  border-radius: 10px;
+  border: hidden;
+  font-size: 1.3rem;
+}
+
+label {
+  font-size: 2rem;
+  padding-left: 2rem;
+}
+
+/*# sourceMappingURL=styles.css.map */
