@@ -18,6 +18,7 @@ const BrowserStates = Object.freeze({
     STARTING: Symbol('starting'),
     STARTED: Symbol('started'),
     STOPPED: Symbol('stopped'),
+    FAILED: Symbol('failed'),
 });
 type BrowserStates = typeof BrowserStates[keyof typeof BrowserStates]
 
@@ -47,22 +48,16 @@ class StreamedBrowser {
     /**
      * Starts the browser (if not started, opens the URL, and starts streaming via Chrome CDP.
      */
-    async streamUrl({targetUrl, width, height, isMobile, browserScale}) {
+    async streamUrl({targetUrl, deviceName}) {
         if (this.state !== BrowserStates.UNSTARTED) {
             console.warn(`Streamed browser requested to start when state is ${String(this.state)}`);
         }
         this.state = BrowserStates.STARTING;
-
-        width = parseInt(width);
-        height = parseInt(height);
-        isMobile = isMobile === 'true';
-        browserScale = parseFloat(browserScale);
-
+        
         if (!this.browser) {
             this.browser = await chromium.launch({
                 headless: true, // Must be headless for auto-scaling
                 args: [
-                    `--force-device-scale-factor=${browserScale}`,
                     '--high-dpi-support=1',
                     '--use-gl=angle',
                     '--use-angle=gl', // or 'd3d11' on Windows for native D3D backend TODO
@@ -72,20 +67,27 @@ class StreamedBrowser {
             });
         }
 
-        await this.setupPage(targetUrl, width, height, isMobile, browserScale);
+        await this.setupPage(targetUrl, deviceName);
+        if (!this.page) {
+            console.error('Page setup failed.');
+            this.state = BrowserStates.FAILED;
+            this.stopStream();
+            return;
+        }
         await this.setupCDP();
 
         this.state = BrowserStates.STARTED;
         this.onBrowserStarted(this.browser);
     }
 
-    private async setupPage(targetUrl: string, width: number, height: number, isMobile: boolean, browserScale) {
-        const page = this.page = await this.browser.newPage({
-            viewport: {width, height},
-            isMobile,
-            hasTouch: true,
-            deviceScaleFactor: browserScale,
-        });
+    private async setupPage(targetUrl: string, deviceName: string) {
+        const device = devices[deviceName];
+        if (!device) {
+            console.error(`Invalid device name: ${deviceName}`);
+            return;
+        }
+
+        const page = this.page = await this.browser.newPage({...device});
 
         page.on('console', (msg) => {
             console.log(`Browser console (${msg.type()}): ${msg.text()}`);
@@ -105,8 +107,6 @@ class StreamedBrowser {
         } catch (e) {
             if (e.name !== 'AbortError') console.error(e); // Ignore AbortError, as it's a feature to allow quickly shutting down the browser
         }
-
-        return page;
     }
 
     /**
@@ -144,7 +144,7 @@ class StreamedBrowser {
         }
 
         console.log('Closing stream...');
-        if (!this.page.isClosed()) await this.page?.close();
+        if (this.page && !this.page.isClosed()) await this.page?.close();
         if (this.browser.isConnected()) await this.browser.close();
     }
 

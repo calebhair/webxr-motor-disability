@@ -2,7 +2,7 @@
 import {CUSTOM_EVENTS} from '../constants.ts';
 
 export function setupSocket(url: string, browserParams, canvas: HTMLCanvasElement) {
-    const socket = io(url, { query: new URLSearchParams(browserParams).toString() });
+    const socket = io(url, { query: browserParams });
 
     const ctx = canvas.getContext('2d');
 

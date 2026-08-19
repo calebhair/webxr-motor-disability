@@ -53,5 +53,6 @@ async function setupBrowserForSocket(socket: Socket, onBrowserFrame: Function) {
         await sb.pageBack();
     });
 
+    console.log(socket.handshake.query)
     await sb.streamUrl(socket.handshake.query);
 }

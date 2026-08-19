@@ -1,6 +1,7 @@
 ﻿import AFRAME from 'aframe';
 import {setupSocket} from '../../sbs/client.ts';
 import {ELEMENT_IDS, SBS_HOST} from '../../constants.ts';
+import * as devices from '../../sbs/playwright-devices.json';
 
 const THREE = AFRAME.THREE;
 
@@ -8,21 +9,13 @@ const mm = (millimetres: number) => millimetres / 1000;
 
 AFRAME.registerComponent('screen', {
     schema: {
+        targetUrl: {type: 'string'},
+        deviceName: {type: 'string'},
         streamedBrowserServerUrl: {type: 'string', default: SBS_HOST},
-        targetUrl: {type: 'string', default: 'https://testpages.eviltester.com/pages/forms/text-inputs/'},
-
-        canvasResolutionX: {type: 'number', default: 430},
-        canvasResolutionY: {type: 'number', default: 932},
-
-        canvasWidth: {type: 'string', default: '100vmax'},
-        canvasHeight: {type: 'string', default: '100vmax'},
-
+        
         physicalWidth: {type: 'number', default: mm(77.6)},
         physicalHeight: {type: 'number', default: mm(160.7)},
         physicalDepth: {type: 'number', default: mm(10)},
-
-        canvasScale: {type: 'number', default: 1}, // Inversely proportional to the resolution at the same scale, e.g., making this 2 will reduce the pixels but retain the same size.
-        isMobile: {type: 'boolean', default: true},
     },
     
     init() {
@@ -34,19 +27,17 @@ AFRAME.registerComponent('screen', {
         document.body.appendChild(canvas);
 
         // Configure canvas
-        canvas.style.width = data.canvasWidth;
-        canvas.style.height = data.canvasHeight;
-        canvas.width = parseInt(data.canvasResolutionX);
-        canvas.height = parseInt(data.canvasResolutionY);
+        const device = devices.default[data.deviceName];
+        if (!device) throw new Error(`Unknown device: ${data.deviceName}`);
+
+        canvas.width = parseInt(device.viewport.width);
+        canvas.height = parseInt(device.viewport.height);
         const ctx = canvas.getContext('2d');
         ctx.scale(data.canvasScale, data.canvasScale);
 
         const browserParams = {
             targetUrl: data.targetUrl,
-            width: data.canvasResolutionX,
-            height: data.canvasResolutionY,
-            isMobile: data.isMobile,
-            browserScale: 1 / data.canvasScale,
+            deviceName: data.deviceName,
         };
         setupSocket(data.streamedBrowserServerUrl, browserParams, canvas);
 
