@@ -1,6 +1,6 @@
 import {
     type Browser, type Page, type CDPSession,
-    chromium,
+    chromium, devices,
 } from 'playwright';
 import {onPageLoad} from './preload.ts';
 import {readFileSync} from 'node:fs';
@@ -21,8 +21,7 @@ const BrowserStates = Object.freeze({
 });
 type BrowserStates = typeof BrowserStates[keyof typeof BrowserStates]
 
-const noop = () => {
-};
+const noop = () => {};
 const STOP_RETRY_TIMEOUT = 1000;
 
 class StreamedBrowser {
@@ -104,7 +103,7 @@ class StreamedBrowser {
         try {
             await page.goto(targetUrl, {signal: this.abortController.signal});
         } catch (e) {
-            if (e.name !== 'AbortError') throw e; // Ignore AbortError, as it's a feature to allow quickly shutting down the browser
+            if (e.name !== 'AbortError') console.error(e); // Ignore AbortError, as it's a feature to allow quickly shutting down the browser
         }
 
         return page;
