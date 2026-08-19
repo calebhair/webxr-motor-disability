@@ -16,10 +16,14 @@ handControlsPrototype.init = function(){
     this.tremorEnabled = false;
     
     document.addEventListener(CUSTOM_EVENTS.CONFIGURE_TREMOR, (event: CustomEvent) => {
-        const { enabled, amplitudeDegrees, frequency } = event.detail;
-        this.tremorEnabled = !!enabled;
-        this.tremor.tremorFrequency = frequency;
-        this.tremor.tremorAmplitudeDegrees = amplitudeDegrees;
+        const { tremorEnabled, tremorAmplitudeDegrees, tremorFrequency } = event.detail;
+
+        if (tremorEnabled !== undefined) 
+            this.tremorEnabled = !!tremorEnabled;
+        if (tremorAmplitudeDegrees !== undefined)
+            this.tremor.tremorAmplitudeDegrees = tremorAmplitudeDegrees;
+        if (tremorFrequency !== undefined)
+            this.tremor.tremorFrequency = tremorFrequency;
     });
 };
 

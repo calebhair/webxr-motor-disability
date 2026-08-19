@@ -1,6 +1,7 @@
 ﻿import AFRAME from 'aframe';
 import {Container, type InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
 import {makeRootPanel, makeBtn, horizonThemes, makeCheckbox, makeSlider} from './helpers.ts';
+import {CUSTOM_EVENTS} from "../../constants.ts";
 
 const defaultContainerConfig: InProperties = {
     flexDirection: 'column',
@@ -9,8 +10,13 @@ const defaultContainerConfig: InProperties = {
     marginBottom: 5,
 };
 
-function round(value, precision) {
-    const multiplier = Math.pow(10, precision || 0);
+/**
+ * Round to a number of decimal places.
+ * @param value the number to round
+ * @param precision how many dp to round to.
+ */
+function round(value: number, precision: number = 0) {
+    const multiplier = Math.pow(10, precision);
     return Math.round(value * multiplier) / multiplier;
 }
 
@@ -28,7 +34,7 @@ AFRAME.registerComponent('main-ui', {
         this.panel = panel;
 
         this.setupCalibrationSection(this.panel);
-        this.setupTremor(this.panel);
+        this.setupTremorSection(this.panel);
         this.setupBrowserSection(this.panel);
     },
     
@@ -60,17 +66,36 @@ AFRAME.registerComponent('main-ui', {
         }, {variant: 'negative', alignSelf: 'center'});
     },
 
-    setupTremor(parent) {
+    setupTremorSection(parent) {
         const container = new Container(defaultContainerConfig);
         parent.add(container);
 
         const header = new Text({ text: 'Tremor', fontSize: 7, color: horizonThemes.primary });
         container.add(header);
         
-        makeCheckbox('Enable', container, AFRAME.log);
-        makeSlider('Amplitude', container, AFRAME.log, {
-            min: 0, max: 5, defaultValue: 0, valueFormat: (value) => `${round(value, 1).toFixed(1)}°`,
-        });
+        function setTremorSetting(setting: string, value) {
+            const detail = {[setting]: value};
+            document.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.CONFIGURE_TREMOR, { detail }));
+        }
+        
+        makeCheckbox('Enabled', container,
+            (checked) => setTremorSetting('tremorEnabled', checked));
+        
+        makeSlider('Amplitude', container,
+            (value) => setTremorSetting('tremorAmplitudeDegrees', value),
+            {
+                min: 0, max: 10, defaultValue: 0,
+                valueFormat: (value) => `${round(value, 1).toFixed(1)}°`,
+            },
+        );
+        
+        makeSlider('Frequency', container,
+            (value) => setTremorSetting('tremorFrequency', value),
+            {
+                min: 0, max: 15, defaultValue: 0,
+                valueFormat: (value) => `${round(value, 0)}Hz`,
+            },
+        );
     },
     
     setupBrowserSection(parent) {
