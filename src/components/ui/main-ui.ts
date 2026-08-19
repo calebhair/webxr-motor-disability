@@ -1,18 +1,12 @@
 ﻿import AFRAME from 'aframe';
-import {type BaseOutProperties, Container, type InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
-import {Checkbox, theme} from '@pmndrs/uikit-horizon';
-import {rootPanel, btn} from './helpers.ts';
+import {Container, type InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
+import {makeRootPanel, makeBtn, horizonThemes, makeCheckbox} from './helpers.ts';
 
-
-const horizonThemes = {
-    primary: theme.component.button.primary.background.fill.default.value,
-    subtext: theme.component.button.primary.background.fill.hovered.value,
-};
-
-const defaultContainerConfig: InProperties<BaseOutProperties> = {
+const defaultContainerConfig: InProperties = {
     flexDirection: 'column',
     alignItems: 'flex-start',
     maxWidth: 70,
+    marginBottom: 5,
 };
 
 AFRAME.registerComponent('main-ui', {
@@ -24,7 +18,7 @@ AFRAME.registerComponent('main-ui', {
         // Automatically handles layers of UI
         this.el.sceneEl.renderer.setTransparentSort(reversePainterSortStable);
 
-        const { root, panel } = rootPanel(this.el);
+        const { root, panel } = makeRootPanel(this.el);
         this.root = root;
         this.panel = panel;
 
@@ -50,13 +44,13 @@ AFRAME.registerComponent('main-ui', {
 
         const calibrationButtonContainer = new Container({ flexDirection: 'row', alignSelf: 'center', paddingTop: 2 });
         calibrationContainer.add(calibrationButtonContainer);
-        btn('Left hand', calibrationButtonContainer, () => {
+        makeBtn('Left hand', calibrationButtonContainer, () => {
             this.calibrationUI.startCalibratingForHand('leftHand');
         });
-        btn('Right hand', calibrationButtonContainer, () => {
+        makeBtn('Right hand', calibrationButtonContainer, () => {
             this.calibrationUI.startCalibratingForHand('rightHand');
         });
-        btn('Reset', calibrationContainer, () => {
+        makeBtn('Reset', calibrationContainer, () => {
             this.calibrationUI.resetCalibration();
         }, {variant: 'negative', alignSelf: 'center'});
     },
@@ -68,12 +62,9 @@ AFRAME.registerComponent('main-ui', {
         const header = new Text({ text: 'Tremor', fontSize: 7, color: horizonThemes.primary });
         container.add(header);
         
-        const enableContainer = new Container({ flexDirection: 'row' });
-        container.add(enableContainer);
-        const enableCheckbox = new Checkbox();
-        enableContainer.add(enableCheckbox);
-        const enableLabel = new Text({ text: 'Enabled', fontSize: 4, color: horizonThemes.primary });
-        enableContainer.add(enableLabel);
+        makeCheckbox('Enable', container, () => {
+            
+        });
     },
     
     setupBrowserSection(parent) {
@@ -91,10 +82,10 @@ AFRAME.registerComponent('main-ui', {
         container.add(buttonContainer);
 
         const navStyle = { fontSize: 10, flexDirection: 'row', padding: 5 };
-        btn('<', buttonContainer, () => {
+        makeBtn('<', buttonContainer, () => {
             document.dispatchEvent(new Event('streamed-browser-back'));
         }, navStyle);
-        btn('>', buttonContainer, () => {
+        makeBtn('>', buttonContainer, () => {
             document.dispatchEvent(new Event('streamed-browser-forward'));
         }, navStyle);
     },

@@ -1,6 +1,6 @@
 ﻿import AFRAME from 'aframe';
 import { Container, reversePainterSortStable } from '@pmndrs/uikit';
-import {rootPanel, btn} from './helpers.ts';
+import {makeRootPanel, makeBtn} from './helpers.ts';
 
 const THREE = AFRAME.THREE;
 
@@ -29,7 +29,7 @@ AFRAME.registerComponent('calibration-ui', {
     setupUI() {
         this.el.sceneEl.renderer.setTransparentSort(reversePainterSortStable);
 
-        const { root, panel } = rootPanel(this.el, {}, { pixelSize: 0.002 });
+        const { root, panel } = makeRootPanel(this.el, {}, { pixelSize: 0.002 });
         this.root = root;
         this.panel = panel;
 
@@ -38,16 +38,16 @@ AFRAME.registerComponent('calibration-ui', {
         const bottomRow = new Container({ flexDirection: 'row' });
         this.panel.add(bottomRow);
 
-        btn('Top left', topRow, () => {
+        makeBtn('Top left', topRow, () => {
             this.calibrateGrip.startRecording('topLeft', this.calibratingHandID);
         });
-        btn('Top right', topRow, () => {
+        makeBtn('Top right', topRow, () => {
             this.calibrateGrip.startRecording('topRight', this.calibratingHandID);
         });
-        btn('Bottom left', bottomRow, () => {
+        makeBtn('Bottom left', bottomRow, () => {
             this.calibrateGrip.startRecording('bottomLeft', this.calibratingHandID);
         });
-        btn('Hide', panel, () => {
+        makeBtn('Hide', panel, () => {
             this.cancelCalibration();
         }, {variant: 'tertiary'});
     },
