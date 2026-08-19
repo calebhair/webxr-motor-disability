@@ -1,5 +1,5 @@
-﻿import {Button, ButtonLabel, Checkbox, Panel, theme} from '@pmndrs/uikit-horizon';
-import {Container, Text} from '@pmndrs/uikit';
+﻿import {Button, ButtonLabel, Checkbox, Panel, Slider, SliderOutProperties, theme} from '@pmndrs/uikit-horizon';
+import {Container, InProperties, Text} from '@pmndrs/uikit';
 
 export const horizonThemes = {
     primary: theme.component.button.primary.background.fill.default.value,
@@ -66,11 +66,38 @@ export function makeCheckbox(labelText: string, parentContainer: Container, cb: 
     
     const checkbox = new Checkbox({
         pixelSize: PIXEL_SIZE * 0.6,
-        // width: 8, height: 8, borderRadius: 2, fontSize: 2,
         onCheckedChange: (checked: boolean) => {
             cb(checked);
             timeoutComponent(checkbox);
         },
     });
     container.add(checkbox);
+}
+
+export function makeSlider(labelText: string, parentContainer: Container, cb: (value: number) => void, sliderOverrides?: InProperties<SliderOutProperties>) {
+    const container = new Container({ flexDirection: 'column' });
+    parentContainer.add(container);
+
+    const label = new Text({ text: labelText, fontSize: 5, color: horizonThemes.primary });
+    container.add(label);
+
+    const slider = new Slider({
+        size: 'sm',
+        marginTop: 5,
+        ...sliderOverrides,
+        onValueChange: cb,
+    });
+    slider.labels.children.forEach((label) => {
+        label.setProperties({ fontSize: 4 });
+    });
+    slider.touchTarget.setProperties({ height: 2 }); // Prevents massive vertical margin
+    slider.track.setProperties({ height: 7 }); // Slider height
+    slider.progress.setProperties({ minWidth: 1 }); // Allow slider to reach far left
+
+    // Enable value to show on thumb (the part you touch)
+    slider.thumbText.setProperties({ display: 'flex', fontSize: 4,
+        backgroundColor: horizonThemes.primary, padding: 2, minWidth: 11, height: 10, borderRadius: 10 });
+    slider.thumb.setProperties({ transformTranslateX: '25%' });
+
+    container.add(slider);
 }

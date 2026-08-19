@@ -1,6 +1,6 @@
 ﻿import AFRAME from 'aframe';
 import {Container, type InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
-import {makeRootPanel, makeBtn, horizonThemes, makeCheckbox} from './helpers.ts';
+import {makeRootPanel, makeBtn, horizonThemes, makeCheckbox, makeSlider} from './helpers.ts';
 
 const defaultContainerConfig: InProperties = {
     flexDirection: 'column',
@@ -8,6 +8,11 @@ const defaultContainerConfig: InProperties = {
     maxWidth: 70,
     marginBottom: 5,
 };
+
+function round(value, precision) {
+    const multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
 
 AFRAME.registerComponent('main-ui', {
     init() {
@@ -62,8 +67,9 @@ AFRAME.registerComponent('main-ui', {
         const header = new Text({ text: 'Tremor', fontSize: 7, color: horizonThemes.primary });
         container.add(header);
         
-        makeCheckbox('Enable', container, () => {
-            
+        makeCheckbox('Enable', container, AFRAME.log);
+        makeSlider('Amplitude', container, AFRAME.log, {
+            min: 0, max: 5, defaultValue: 0, valueFormat: (value) => `${round(value, 1).toFixed(1)}°`,
         });
     },
     
