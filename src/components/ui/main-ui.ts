@@ -1,6 +1,12 @@
 ﻿import AFRAME from 'aframe';
-import {Container, reversePainterSortStable, Text} from '@pmndrs/uikit';
+import {Container, InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
 import {makeRootPanel, makeBtn, horizonThemes, defaultContainerConfig} from './helpers.ts';
+
+const rowContainerConfig: InProperties = {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    paddingTop: 2,
+};
 
 AFRAME.registerComponent('main-ui', {
     init() {
@@ -11,22 +17,37 @@ AFRAME.registerComponent('main-ui', {
         this.root = root;
         this.panel = panel;
 
-        this.setupBrowserSection(this.panel);
+        this.setupUI(this.panel);
     },
 
-    setupBrowserSection(parent) {
+    setupUI(parent) {
         const container = new Container(defaultContainerConfig);
         parent.add(container);
 
-        const header = new Text({ text: 'Browser', fontSize: 7, color: horizonThemes.primary });
-        container.add(header);
+        const firstRow = new Container(rowContainerConfig);
+        container.add(firstRow);
+        makeBtn('Exit', firstRow, () => {
+            this.el.sceneEl.exitVR();
+        }, {variant: 'negative', alignSelf: 'center', fontSize: 6, paddingX: 5 });
 
-        const buttonContainer = new Container({
-            flexDirection: 'row',
-            alignSelf: 'center',
-            paddingTop: 2,
-        });
-        container.add(buttonContainer);
+        const secondRow = new Container(rowContainerConfig);
+        container.add(secondRow);
+        makeBtn('Tremor', secondRow, () => {
+            
+        }, {fontSize: 6});
+        makeBtn('Calibrate', secondRow, () => {
+
+        }, {fontSize: 6});
+        
+        this.setupBrowserSection(container);
+    },
+    
+    setupBrowserSection(parent) {
+        const header = new Text({ text: 'Browser', fontSize: 7, color: horizonThemes.primary });
+        parent.add(header);
+
+        const buttonContainer = new Container(rowContainerConfig);
+        parent.add(buttonContainer);
 
         const navStyle = { fontSize: 10, flexDirection: 'row', padding: 5 };
         makeBtn('<', buttonContainer, () => {
