@@ -53,7 +53,12 @@
 
       <form id="config-form">
         <label for="targetUrl">URL</label>
-        <input id="targetUrl" name="targetUrl" type="text" value="https://">
+        <input id="targetUrl" name="targetUrl" type="url" value="https://">
+        
+        <label for="useSearch">Use Search</label>
+        <div class="checkbox-parent">
+          <input id="useSearch" name="useSearch" type="checkbox">
+        </div>
 
         <label for="deviceName">Device</label>
         <select id="deviceName" name="deviceName">

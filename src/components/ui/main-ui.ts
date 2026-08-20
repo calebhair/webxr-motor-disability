@@ -2,7 +2,7 @@
 import {Container, InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
 import {makeRootPanel, makeBtn, horizonThemes, defaultContainerConfig} from './helpers.ts';
 import {Button} from '@pmndrs/uikit-horizon';
-import {ELEMENT_IDS} from '../../constants.ts';
+import {CUSTOM_EVENTS, ELEMENT_IDS} from '../../constants.ts';
 
 const rowContainerConfig: InProperties = {
     flexDirection: 'row',
@@ -91,10 +91,10 @@ AFRAME.registerComponent('main-ui', {
 
         const navStyle = { fontSize: 10, flexDirection: 'row', padding: 5 };
         makeBtn('<', buttonContainer, () => {
-            document.dispatchEvent(new Event('streamed-browser-back'));
+            document.dispatchEvent(new Event(CUSTOM_EVENTS.BROWSER_BACK));
         }, navStyle);
         makeBtn('>', buttonContainer, () => {
-            document.dispatchEvent(new Event('streamed-browser-forward'));
+            document.dispatchEvent(new Event(CUSTOM_EVENTS.BROWSER_FORWARD));
         }, navStyle);
     },
     

@@ -12,6 +12,7 @@ AFRAME.registerSystem('device-handler', {
         let deviceParentEl;
         sceneEl.addEventListener('enter-vr', () => {
             const formObject = this.getConfigFormContents();
+
             deviceParentEl = this.createPhoneEntity(formObject);
             this.el.sceneEl.appendChild(deviceParentEl);
         });
@@ -29,6 +30,11 @@ AFRAME.registerSystem('device-handler', {
         const formData = new FormData(form);
         const formObject = {};
         formData.forEach((value, key) => formObject[key] = value);
+
+        // Post process
+        if (formObject.useSearch) {
+            formObject.targetUrl = `https://www.google.com/search?q=${formObject.targetUrl}`;
+        }
 
         return formObject;
     },

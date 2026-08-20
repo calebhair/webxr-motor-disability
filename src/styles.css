@@ -32,11 +32,7 @@
   grid-template-columns: auto 1fr;
   gap: 0.75rem 1rem;
   align-items: center;
-}
-
-.long-row {
-  display: flex;
-  align-items: center;
+  justify-items: center;
 }
 
 input, button, select {
@@ -45,6 +41,20 @@ input, button, select {
   border-radius: 10px;
   border: hidden;
   font-size: 1.3rem;
+}
+
+input[type=checkbox] {
+  width: 4rem;
+  height: 4rem;
+  margin: 0.5rem;
+  accent-color: #404040;
+}
+
+.checkbox-parent {
+  background: white;
+  border-radius: 10px;
+  width: 5rem;
+  height: 5rem;
 }
 
 label {

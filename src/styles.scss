@@ -32,11 +32,7 @@
     grid-template-columns: auto 1fr;
     gap: 0.75rem 1rem;
     align-items: center;
-}
-
-.long-row {
-    display: flex;
-    align-items: center;
+    justify-items: center
 }
 
 input, button, select {
@@ -45,6 +41,24 @@ input, button, select {
     border-radius: 10px;
     border: hidden;
     font-size: 1.3rem;
+}
+
+
+$checkbox-size: 4rem;
+$checkbox-container-offset: 0.5rem;
+input[type=checkbox] {
+    width: $checkbox-size;
+    height: $checkbox-size;
+    margin: $checkbox-container-offset;
+    accent-color: #404040;
+}
+
+$checkbox-parent: calc($checkbox-size + $checkbox-container-offset * 2);
+.checkbox-parent {
+    background: white;
+    border-radius: 10px;
+    width: $checkbox-parent;
+    height: $checkbox-parent;
 }
 
 label {
