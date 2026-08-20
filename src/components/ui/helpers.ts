@@ -6,7 +6,24 @@ export const horizonThemes = {
     subtext: theme.component.button.primary.background.fill.hovered.value,
 };
 
+export const defaultContainerConfig: InProperties = {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    maxWidth: 70,
+    marginBottom: 5,
+};
+
 export const PIXEL_SIZE = 0.005;
+
+/**
+ * Round to a number of decimal places.
+ * @param value the number to round
+ * @param precision how many dp to round to.
+ */
+export function round(value: number, precision: number = 0) {
+    const multiplier = Math.pow(10, precision);
+    return Math.round(value * multiplier) / multiplier;
+}
 
 /**
  * Disables a uikit component for a small amount of time, to prevent accidental double clicks.

@@ -1,94 +1,50 @@
 ﻿import AFRAME from 'aframe';
-import { Container, reversePainterSortStable } from '@pmndrs/uikit';
-import {makeRootPanel, makeBtn} from './helpers.ts';
-
-const THREE = AFRAME.THREE;
-
-const LEFT_HAND_ID = 'leftHand';
-const RIGHT_HAND_ID = 'rightHand';
-
-const HAND_OFFSET = new THREE.Vector3(0, -0.15, 0);
+import {Container, Text} from '@pmndrs/uikit';
+import {makeRootPanel, makeBtn, horizonThemes, defaultContainerConfig} from './helpers.ts';
 
 AFRAME.registerComponent('calibration-ui', {
-    calibrating: false,
-    _vec3Cache: new THREE.Vector3(),
+    init() {
+        const calibrationHandUIElement = document.querySelector('[calibration-hand-ui]');
+        if (!calibrationHandUIElement) throw new Error('calibration-hand-ui is missing');
+        this.calibrationHandUI = calibrationHandUIElement.components['calibration-hand-ui'];
 
-    init: function () {
-        const calibrateGripEl = document.querySelector('[calibrate-grip]');
-        if (!calibrateGripEl) throw new Error('calibrate-grip is missing');
-        this.calibrateGrip = calibrateGripEl.components['calibrate-grip'];
-
-        this.handTracking = {
-            [LEFT_HAND_ID]: document.getElementById(LEFT_HAND_ID).components['hand-tracking-controls'],
-            [RIGHT_HAND_ID]: document.getElementById(RIGHT_HAND_ID).components['hand-tracking-controls'],
-        };
-
-        this.setupUI();
-    },
-    
-    setupUI() {
-        this.el.sceneEl.renderer.setTransparentSort(reversePainterSortStable);
-
-        const { root, panel } = makeRootPanel(this.el, {}, { pixelSize: 0.002 });
+        const { root, panel } = makeRootPanel(this.el);
         this.root = root;
         this.panel = panel;
 
-        const topRow = new Container({ flexDirection: 'row', alignItems: 'flex-start' });
-        this.panel.add(topRow);
-        const bottomRow = new Container({ flexDirection: 'row' });
-        this.panel.add(bottomRow);
-
-        makeBtn('Top left', topRow, () => {
-            this.calibrateGrip.startRecording('topLeft', this.calibratingHandID);
-        });
-        makeBtn('Top right', topRow, () => {
-            this.calibrateGrip.startRecording('topRight', this.calibratingHandID);
-        });
-        makeBtn('Bottom left', bottomRow, () => {
-            this.calibrateGrip.startRecording('bottomLeft', this.calibratingHandID);
-        });
-        makeBtn('Hide', panel, () => {
-            this.cancelCalibration();
-        }, {variant: 'tertiary'});
-    },
-
-    startCalibratingForHand(grabbingHandID: typeof LEFT_HAND_ID | typeof RIGHT_HAND_ID) {
-        this.grabbingHandID = grabbingHandID;
-
-        if (grabbingHandID === LEFT_HAND_ID) this.calibratingHandID = RIGHT_HAND_ID;
-        else if (grabbingHandID === RIGHT_HAND_ID) this.calibratingHandID = LEFT_HAND_ID;
-        else throw new Error('Unknown grabbing hand ID');
-
-        this.calibrating = true;
-        this.root.visible = true;
+        // UI
+        this.setupUI(this.panel);
     },
     
-    cancelCalibration() {
-        this.calibrateGrip.stopRecording();
-        this.calibrating = false;
-        this.root.visible = false;
+    setupUI(parent) {
+        const calibrationContainer = new Container(defaultContainerConfig);
+        parent.add(calibrationContainer);
+
+        const calibrationHeading = new Text({ text: 'Calibration', fontSize: 7, color: horizonThemes.primary });
+        calibrationContainer.add(calibrationHeading);
+
+        const calibrationSubheading = new Text({ text: 'Calibration should be performed while the tremor is disabled.',
+            fontSize: 3, color: horizonThemes.subtext });
+        calibrationContainer.add(calibrationSubheading);
+
+        const calibrationInstruction = new Text({ text: 'Select which hand should hold the device.',
+            fontSize: 3, color: horizonThemes.subtext, paddingTop: 2 });
+        calibrationContainer.add(calibrationInstruction);
+
+        const calibrationButtonContainer = new Container({ flexDirection: 'row', alignSelf: 'center', paddingTop: 2 });
+        calibrationContainer.add(calibrationButtonContainer);
+        makeBtn('Left hand', calibrationButtonContainer, () => {
+            this.calibrationHandUI.startCalibratingForHand('leftHand');
+        });
+        makeBtn('Right hand', calibrationButtonContainer, () => {
+            this.calibrationHandUI.startCalibratingForHand('rightHand');
+        });
+        makeBtn('Reset', calibrationContainer, () => {
+            this.calibrationHandUI.resetCalibration();
+        }, {variant: 'negative', alignSelf: 'center'});
     },
 
-    resetCalibration() {
-        this.cancelCalibration();
-        this.calibrateGrip.resetReadings();
-        this.calibrateGrip.resetGripPoints();
-    },
-
-    tick: function (time, timeDelta) {
-        if (!this.calibrating) return;
+    tick(time, timeDelta) {
         this.root.update(timeDelta);
-
-        const uiObject3D: AFRAME.THREE.Object3D = this.el.object3D;
-        // Move UI under the grabbing hand
-        uiObject3D.position.copy(this.getHandCentrePos())
-            .add(HAND_OFFSET);
-        // Point towards camera
-        uiObject3D.lookAt(this.el.sceneEl.camera.getWorldPosition(this._vec3Cache));
-    },
-
-    getHandCentrePos() {
-        const centrePos = this.handTracking[this.grabbingHandID].bones.find(bone => bone.name === 'middle-finger-metacarpal').position;
-        return this._vec3Cache.copy(centrePos);
     },
 });
