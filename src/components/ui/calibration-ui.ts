@@ -8,11 +8,10 @@ AFRAME.registerComponent('calibration-ui', {
         if (!calibrationHandUIElement) throw new Error('calibration-hand-ui is missing');
         this.calibrationHandUI = calibrationHandUIElement.components['calibration-hand-ui'];
 
-        const { root, panel } = makeRootPanel(this.el);
+        const { root, panel } = makeRootPanel(this.el, {}, { display: 'none' });
         this.root = root;
         this.panel = panel;
 
-        // UI
         this.setupUI(this.panel);
     },
     

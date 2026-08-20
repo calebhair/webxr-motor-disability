@@ -38,6 +38,11 @@ export function makeBtn(text, parentContainer: Container, cb: Function = undefin
     const btn = new Button({
         minHeight: 0, minWidth: 0, height: 20,
         margin: 2, padding: 4,
+        onClick: (event) => {
+            if (btn.properties.peek().disabled) return;
+            if (cb) cb(event);
+            timeoutComponent(btn);
+        },
         ...btnOverrides,
     });
     parentContainer.add(btn);
@@ -46,11 +51,6 @@ export function makeBtn(text, parentContainer: Container, cb: Function = undefin
     btn.add(btnLabel);
     const btnText = new Text({ text, fontSize: 4, ...btnOverrides });
     btnLabel.add(btnText);
-
-    if (cb) btn.addEventListener('pointerup', event => {
-        cb(event);
-        timeoutComponent(btn);
-    });
 
     return btn;
 }

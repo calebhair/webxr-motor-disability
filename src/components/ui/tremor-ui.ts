@@ -5,7 +5,7 @@ import {CUSTOM_EVENTS} from '../../constants.ts';
 
 AFRAME.registerComponent('tremor-ui', {
     init() {
-        const { root, panel } = makeRootPanel(this.el);
+        const { root, panel } = makeRootPanel(this.el, {}, { display: 'none' });
         this.root = root;
         this.panel = panel;
 
