@@ -17,6 +17,7 @@
     </script>
 
     <script src="src/sbs/client.ts" type="module"></script>
+    <script src="src/form.ts" type="module"></script>
     <script src="src/components/device/screen.ts" type="module"></script>
     <script src="src/components/device/touchable-plane.ts" type="module"></script>
     <script src="src/components/device/device-handler.ts" type="module"></script>
@@ -52,14 +53,14 @@
       <h1 id="title">WebXR Tremor Simulation</h1>
 
       <form id="config-form">
-        <label for="targetUrl">URL</label>
-        <input id="targetUrl" name="targetUrl" type="url" value="https://">
-        
         <label for="useSearch">Use Search</label>
         <div class="checkbox-parent">
           <input id="useSearch" name="useSearch" type="checkbox">
         </div>
-
+        
+        <label for="targetUrl">URL</label>
+        <input id="targetUrl" name="targetUrl" type="url" value="https://">
+        
         <label for="deviceName">Device</label>
         <select id="deviceName" name="deviceName">
           <option value="iPhone 13">Small phone</option>

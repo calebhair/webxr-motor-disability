@@ -60,7 +60,7 @@ $checkbox-parent: calc($checkbox-size + $checkbox-container-offset * 2);
     border-radius: 10px;
     width: $checkbox-parent;
     height: $checkbox-parent;
-    margin-left: 1rem
+    margin-left: $checkbox-container-offset;
 }
 
 label {
