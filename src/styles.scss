@@ -25,6 +25,7 @@
 
 #title {
     font-size: 5rem;
+    margin-inline: 5rem;
 }
 
 #ui-overlay > form {
@@ -32,7 +33,7 @@
     grid-template-columns: auto 1fr;
     gap: 0.75rem 1rem;
     align-items: center;
-    justify-items: center
+    margin: 1rem;
 }
 
 input, button, select {
@@ -59,6 +60,7 @@ $checkbox-parent: calc($checkbox-size + $checkbox-container-offset * 2);
     border-radius: 10px;
     width: $checkbox-parent;
     height: $checkbox-parent;
+    margin-left: 1rem
 }
 
 label {
