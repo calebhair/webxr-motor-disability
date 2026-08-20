@@ -27,8 +27,6 @@ AFRAME.registerComponent('calibration-hand-ui', {
     },
     
     setupUI() {
-        this.el.sceneEl.renderer.setTransparentSort(reversePainterSortStable);
-
         const { root, panel } = makeRootPanel(this.el, {}, { pixelSize: 0.002 });
         this.root = root;
         this.panel = panel;
@@ -67,6 +65,7 @@ AFRAME.registerComponent('calibration-hand-ui', {
         this.calibrateGrip.stopRecording();
         this.calibrating = false;
         this.root.visible = false;
+        this.el.object3D.position.set(0, -100, 0); // Simplest way to prevent interaction
     },
 
     resetCalibration() {
