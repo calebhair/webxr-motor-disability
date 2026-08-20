@@ -1,0 +1,7 @@
+﻿{
+  "iPhone 13": { "width": 71.5, "height": 146.7, "ppi": 460 },
+  "iPhone 13 landscape": { "width": 71.5, "height": 146.7, "ppi": 460 },
+  "iPhone 17 Pro Max":  { "width": 78, "height": 163.4, "ppi": 460 },
+  "iPhone 17 Pro Max landscape": { "width": 78, "height": 163.4, "ppi": 460 },
+  "Galaxy Z Fold 6":  { "width": 132.6, "height": 153.5, "ppi": 374.39 }
+}

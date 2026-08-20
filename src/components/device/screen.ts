@@ -2,10 +2,12 @@
 import {setupSocket} from '../../sbs/client.ts';
 import {ELEMENT_IDS, SBS_HOST} from '../../constants.ts';
 import * as devices from '../../sbs/playwright-devices.json';
+import * as deviceSizes from '../../sbs/device-sizes.json';
 
 const THREE = AFRAME.THREE;
 
-const mm = (millimetres: number) => millimetres / 1000;
+const mm = (millimetres: number) => millimetres / 1000; // Returns metres
+const inch = (inches: number) => inches / 39.37; // Return metres
 
 AFRAME.registerComponent('screen', {
     schema: {
@@ -13,8 +15,8 @@ AFRAME.registerComponent('screen', {
         deviceName: {type: 'string'},
         streamedBrowserServerUrl: {type: 'string', default: SBS_HOST},
         
-        physicalWidth: {type: 'number', default: mm(77.6)},
-        physicalHeight: {type: 'number', default: mm(160.7)},
+        physicalWidth: {type: 'number'},
+        physicalHeight: {type: 'number'},
         physicalDepth: {type: 'number', default: mm(10)},
     },
     
@@ -26,14 +28,19 @@ AFRAME.registerComponent('screen', {
         canvas.id = ELEMENT_IDS.STREAMED_BROWSER_CANVAS;
         document.body.appendChild(canvas);
 
-        // Configure canvas
         const device = devices.default[data.deviceName];
         if (!device) throw new Error(`Unknown device: ${data.deviceName}`);
+        console.log(`Found device: ${device}`);
+        const devicePPI = deviceSizes.default[data.deviceName]?.ppi;
+        if (!devicePPI) throw new Error(`Undefined PPI for: ${data.deviceName}`);
+        console.log(`Found device PPI: ${devicePPI}`);
+        
+        const { viewport, deviceScaleFactor } = device;
+        data.physicalWidth = inch(viewport.width * deviceScaleFactor / devicePPI);
+        data.physicalHeight = inch(viewport.height * deviceScaleFactor / devicePPI);
 
-        canvas.width = parseInt(device.viewport.width);
-        canvas.height = parseInt(device.viewport.height);
-        const ctx = canvas.getContext('2d');
-        ctx.scale(data.canvasScale, data.canvasScale);
+        canvas.width = parseInt(viewport.width);
+        canvas.height = parseInt(viewport.height);
 
         const browserParams = {
             targetUrl: data.targetUrl,
