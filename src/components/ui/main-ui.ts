@@ -1,7 +1,8 @@
 ﻿import AFRAME from 'aframe';
 import {Container, InProperties, reversePainterSortStable, Text} from '@pmndrs/uikit';
 import {makeRootPanel, makeBtn, horizonThemes, defaultContainerConfig} from './helpers.ts';
-import {Button} from "@pmndrs/uikit-horizon";
+import {Button} from '@pmndrs/uikit-horizon';
+import {ELEMENT_IDS} from '../../constants.ts';
 
 const rowContainerConfig: InProperties = {
     flexDirection: 'row',
@@ -16,8 +17,12 @@ AFRAME.registerComponent('main-ui', {
         
         this.tremorUI = document.querySelector('[tremor-ui]').components['tremor-ui'];
         this.calibrationUI = document.querySelector('[calibration-ui]').components['calibration-ui'];
+        this.environmentEl = document.getElementById(ELEMENT_IDS.ENVIRONMENT);
+        this.hands = Array.from(document.querySelectorAll('[hand-tracking-controls]'));
         if (!this.tremorUI) throw new Error('Tremor UI not found.');
         if (!this.calibrationUI) throw new Error('Calibration UI not found.');
+        if (!this.environmentEl) throw new Error('Environment element not found.');
+        if (this.hands.length !== 2) throw new Error('Two hand-tracking-controls elements not found.');
 
         const { root, panel } = makeRootPanel(this.el);
         this.root = root;
@@ -34,7 +39,8 @@ AFRAME.registerComponent('main-ui', {
         container.add(firstRow);
         makeBtn('Exit', firstRow, () => {
             this.el.sceneEl.exitVR();
-        }, {variant: 'negative', alignSelf: 'center', fontSize: 6, paddingX: 5 });
+        }, {variant: 'negative', fontSize: 6});
+        makeBtn('Passthrough', firstRow, () => this.togglePassthrough(), {fontSize: 6});
 
         const secondRow = new Container(rowContainerConfig);
         container.add(secondRow);
@@ -60,6 +66,20 @@ AFRAME.registerComponent('main-ui', {
             uiRoot.setProperties({ display: 'flex' });
             toggleElement.setProperties({ variant: 'negative' });
         }
+    },
+    
+    passthroughEnabled: false,
+    togglePassthrough() {
+        this.passthroughEnabled = !this.passthroughEnabled;
+        const modelOpacity = this.passthroughEnabled ? 0.2 : 1;
+
+        // Toggle environment for hiding hands, for more immersive tremor
+        this.environmentEl.setAttribute('environment', { active: !this.passthroughEnabled });
+
+        // Reduce hand opacity in passthrough
+        this.hands.forEach((handEl: HTMLElement) => {
+            handEl.setAttribute('hand-tracking-controls', { modelOpacity });
+        });
     },
     
     setupBrowserSection(parent) {
