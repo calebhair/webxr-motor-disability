@@ -44,6 +44,11 @@ input, button, select {
   font-size: 1.3rem;
 }
 
+.invalid-url {
+  color: darkred;
+  text-decoration: spelling-error;
+}
+
 input[type=checkbox] {
   width: 4rem;
   height: 4rem;
