@@ -4,6 +4,7 @@ import {
 } from 'playwright';
 import {onPageLoad} from './preload.ts';
 import {readFileSync} from 'node:fs';
+import {USE_DIRECTX} from '../../constants.ts';
 
 // Load air datepicker manually, due to restrictions on addInitScript
 const airDatepickerBundle = readFileSync('./node_modules/air-datepicker/air-datepicker.js', 'utf-8');
@@ -55,12 +56,13 @@ class StreamedBrowser {
         this.state = BrowserStates.STARTING;
         
         if (!this.browser) {
+            const angle = USE_DIRECTX ? 'd3d11' : 'gl';
             this.browser = await chromium.launch({
                 headless: true, // Must be headless for auto-scaling
                 args: [
                     '--high-dpi-support=1',
                     '--use-gl=angle',
-                    '--use-angle=gl', // or 'd3d11' on Windows for native D3D backend TODO
+                    `--use-angle=${angle}`,
                     '--enable-gpu-rasterization',
                     '--ignore-gpu-blocklist',
                 ],

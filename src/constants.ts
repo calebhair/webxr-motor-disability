@@ -7,6 +7,8 @@ export const CLIENT_HOST = `https://143.117.93.180:${CLIENT_PORT}`;
 export const CERT_PATH = './localhost+1.pem';
 export const KEY_PATH = './localhost+1-key.pem';
 
+export const USE_DIRECTX = false; // Instead of WebGL
+
 export const CUSTOM_EVENTS = Object.freeze({
     CONFIGURE_TREMOR: 'configureTremor',
     
