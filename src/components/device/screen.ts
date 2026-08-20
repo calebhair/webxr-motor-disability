@@ -30,7 +30,8 @@ AFRAME.registerComponent('screen', {
 
         const device = devices.default[data.deviceName];
         if (!device) throw new Error(`Unknown device: ${data.deviceName}`);
-        console.log(`Found device: ${device}`);
+        console.log('Found device ↓');
+        console.log(device);
         const devicePPI = deviceSizes.default[data.deviceName]?.ppi;
         if (!devicePPI) throw new Error(`Undefined PPI for: ${data.deviceName}`);
         console.log(`Found device PPI: ${devicePPI}`);
@@ -46,7 +47,7 @@ AFRAME.registerComponent('screen', {
             targetUrl: data.targetUrl,
             deviceName: data.deviceName,
         };
-        setupSocket(data.streamedBrowserServerUrl, browserParams, canvas);
+        this.socket = setupSocket(data.streamedBrowserServerUrl, browserParams, canvas);
 
         // Configure geometry
         this.geometry = new THREE.PlaneGeometry(data.physicalWidth, data.physicalHeight);
@@ -73,6 +74,7 @@ AFRAME.registerComponent('screen', {
 
     remove() {
         this.el.removeObject3D('mesh');
-        document.removeChild(this.canvas);
+        this.canvas?.parentNode.removeChild(this.canvas);
+        this.socket?.close();
     },
 });

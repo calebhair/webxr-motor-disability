@@ -1,7 +1,7 @@
 ﻿import {io, type Socket} from 'socket.io-client';
 import {CUSTOM_EVENTS} from '../constants.ts';
 
-export function setupSocket(url: string, browserParams, canvas: HTMLCanvasElement) {
+export function setupSocket(url: string, browserParams, canvas: HTMLCanvasElement): Socket {
     const socket = io(url, { query: browserParams });
 
     const ctx = canvas.getContext('2d');
@@ -22,7 +22,7 @@ export function setupSocket(url: string, browserParams, canvas: HTMLCanvasElemen
         });
     });
 
-    return { socket };
+    return socket;
 }
 
 function setupTouchHandlers(socket: Socket, canvas : HTMLCanvasElement, scale: number) {

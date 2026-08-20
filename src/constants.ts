@@ -9,7 +9,6 @@ export const KEY_PATH = './localhost+1-key.pem';
 
 export const CUSTOM_EVENTS = Object.freeze({
     CONFIGURE_TREMOR: 'configureTremor',
-    XR_ENTERED: 'xrEntered',
     
     BROWSER_CLICK: 'browserClick',
     BROWSER_DISPATCH_TOUCH_EVENT: 'browserDispatchTouchEvent',
