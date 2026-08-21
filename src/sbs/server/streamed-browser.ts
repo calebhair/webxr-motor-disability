@@ -164,13 +164,13 @@ class StreamedBrowser {
      */
     async dispatchTouchEvent({eventType, touchPoints}) {
         try {
+            await this.dataCollector.onTouchEvent(eventType, touchPoints);
             await this.cdpSession?.send('Input.dispatchTouchEvent', {
                 type: eventType,
                 touchPoints,
             });
-            this.dataCollector.onTouchEvent(eventType, touchPoints);
         } catch (e) {
-            console.warn(e);
+            console.error(e);
         }
     }
 
