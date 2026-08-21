@@ -79,7 +79,7 @@ class StreamedBrowser {
             return;
         }
         await this.setupCDP();
-        this.dataCollector = new DataCollector(this.page);
+        // this.dataCollector = new DataCollector(this.page);
 
         this.state = BrowserStates.STARTED;
         this.onBrowserStarted(this.browser);
@@ -168,7 +168,7 @@ class StreamedBrowser {
                 type: eventType,
                 touchPoints,
             });
-            this.dataCollector.onTouchEvent(eventType, touchPoints);
+            this.dataCollector?.onTouchEvent(eventType, touchPoints);
         } catch (e) {
             console.warn(e);
         }
