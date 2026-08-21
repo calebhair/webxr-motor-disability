@@ -32,7 +32,7 @@
     <script src="src/components/ui/main-ui.ts" type="module"></script>
   </head>
   <body>
-    <a-scene webxr="optionalFeatures: hit-test; referenceSpaceType: local-floor">
+    <a-scene>
       <a-entity id="environment" environment="preset: contact; dressingAmount: 10; active: true;"></a-entity>
       <a-light id="dirlight" intensity="1" light="castShadow:true;type:directional" position="1 1 1"></a-light>
 <!--      <a-log position="0 1 -0.5" scale="0.1 0.1 0.1" grabbable></a-log>-->
@@ -42,10 +42,10 @@
 
       <a-entity id="calibrate-grip" calibrate-grip></a-entity>
 
-      <a-entity tremor-ui position="-0.55 1 0" rotation="0 90 0"></a-entity>
+      <a-entity tremor-ui position="-0.55 1.4 0" rotation="0 90 0"></a-entity>
       <a-entity calibration-hand-ui></a-entity> <!-- Must come before calibration-ui -->
-      <a-entity calibration-ui position="0 1 -0.566" rotation="0 0 0"></a-entity>
-      <a-entity main-ui position="-0.4 1 -0.4" rotation="0 45 0"></a-entity>
+      <a-entity calibration-ui position="0 1.4 -0.566" rotation="0 0 0"></a-entity>
+      <a-entity main-ui position="-0.4 1.4 -0.4" rotation="0 45 0"></a-entity>
     </a-scene>
 
     <!-- Flat UI landing page/config -->
