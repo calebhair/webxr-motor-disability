@@ -5,6 +5,7 @@ import {
 import {onPageLoad} from './preload.ts';
 import {readFileSync} from 'node:fs';
 import {USE_DIRECTX} from '../../constants.ts';
+import {DataCollector} from './data-collection.ts';
 
 // Load air datepicker manually, due to restrictions on addInitScript
 const airDatepickerBundle = readFileSync('./node_modules/air-datepicker/air-datepicker.js', 'utf-8');
@@ -34,6 +35,7 @@ class StreamedBrowser {
     private state: BrowserStates = BrowserStates.UNSTARTED;
     private abortController: AbortController;
     private cdpSession: CDPSession;
+    private dataCollector: DataCollector;
 
     /**
      * @param onScreencastFrame function called on each screencast frame; passes Base64-encoded
@@ -77,6 +79,7 @@ class StreamedBrowser {
             return;
         }
         await this.setupCDP();
+        this.dataCollector = new DataCollector(this.page);
 
         this.state = BrowserStates.STARTED;
         this.onBrowserStarted(this.browser);
@@ -165,6 +168,7 @@ class StreamedBrowser {
                 type: eventType,
                 touchPoints,
             });
+            this.dataCollector.onTouchEvent(eventType, touchPoints);
         } catch (e) {
             console.warn(e);
         }
